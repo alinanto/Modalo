@@ -33,12 +33,12 @@ extern "C"
 #define ELOG_FILE 8
 #define EMODBUS_READ 9
 
-// API functions (not accessible by including header and linking library)
+// API functions (accessible by including header and linking library)
 MODALO_API void MODALO_CALL modaloSetLastError(int errorCode, char * LastError);
 MODALO_API void MODALO_CALL modaloPrintLastError();
 
 
-// non API functions
+// non API functions (not accessible by including header and linking library)
 char* modaloGetErrorType();
 
 #ifdef __cplusplus

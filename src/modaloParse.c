@@ -7,172 +7,237 @@
 #include "cJSON.h"
 #include "modaloParse.h"
 
-int validateModaloToken(CONFIG* config, char *parameter, char *value) // validates and saves parameter and value
-{
-  char error[MODALO_ERROR_MAXLENGTH] = "";
-  if(!strcmp(parameter,"COM_PORT"))
-  {
-    if(strlen(value)<6 &&
-        value[0] =='C' &&
-        value[1] =='O' &&
-        value[2] == 'M' && // check for "COM"
-        '1'<=value[3] && value[3]<='9' && // digit 1-9
-        (( '0'<=value[4] && value[4]<='9') || value[4] == '\0' ))// digit 1-9 or null character
-    strcpy(config->port,value); // valid port
-    else
-    {
-      sprintf(error,"Invalid value for parameter COM_PORT: %s",value);
-      modaloSetLastError(EVALIDATE_PARAMETER,error);
-      return 0;
-    }
+// To clear any half parsed device information
+void cleanModaloConfigStruct(CONFIG *config) {
+  for(int i=0;i<MAX_MODBUS_DEVICES;i++)   {
+    if(config->device[i].assetID[0] == '\0')  config->device[i].slaveID = 0;
+    if(config->device[i].model[0] == '\0')  config->device[i].slaveID = 0;
+    if(config->device[i].make[0] == '\0')  config->device[i].slaveID = 0;
+    if(config->device[i].capacity == 0)  config->device[i].slaveID = 0;
+    if(config->device[i].plantCode == 0)  config->device[i].slaveID = 0;
+    // if any value is not initialized we are clearing the slaveID to indicate empty
   }
-  else if(!strcmp(parameter,"BAUD_RATE"))
-  {
-    if(strlen(value)<7 && atoi(value))
-    config->baud = atoi(value);
-    else
-    {
-      sprintf(error,"Invalid value for parameter BAUD_RATE: %s",value);
-      modaloSetLastError(EVALIDATE_PARAMETER,error);
-      return 0;
-    }
-  }
-  else if(!strcmp(parameter,"DATA_BITS"))
-  {
-    if(strlen(value)<3 && (atoi(value)))
-    config->dataBits = atoi(value);
-    else
-    {
-      sprintf(error,"Invalid value for parameter DATA_BITS: %s",value);
-      modaloSetLastError(EVALIDATE_PARAMETER,error);
-      return 0;
-    }
-  }
-  else if(!strcmp(parameter,"STOP_BITS"))
-  {
-    if(strlen(value)<2 && (atoi(value) || value[0]=='0'))
-    config->stopBits = atoi(value);
-    else
-    {
-      sprintf(error,"Invalid value for parameter STOP_BITS: %s",value);
-      modaloSetLastError(EVALIDATE_PARAMETER,error);
-      return 0;
-    }
-  }
-  else if(!strcmp(parameter,"PARITY"))
-  {
-    if(!strcmp(value,"ODD")) config->parity=PARITY_ODD;
-    else if(!strcmp(value,"EVEN")) config->parity=PARITY_EVEN;
-    else if(!strcmp(value,"NONE")) config->parity=PARITY_NONE;
-    else
-    {
-      sprintf(error,"Invalid value for parameter PARITY: %s",value);
-      modaloSetLastError(EVALIDATE_PARAMETER,error);
-      return 0;
-    }
-  }
-  else if(!strcmp(parameter,"INVERTER_MAKE"))
-  {
-    if(strlen(value)<MAKE_MODEL_NAMESIZE) strcpy(config->make,value);
-    else
-    {
-      sprintf(error,"Invalid value for parameter INVERTER_MAKE(max 16 characters only): %s",value);
-      modaloSetLastError(EVALIDATE_PARAMETER,error);
-      return 0;
-    }
-  }
-  else if(!strcmp(parameter,"INVERTER_MODEL"))
-  {
-    if(strlen(value)<MAKE_MODEL_NAMESIZE) strcpy(config->model,value);
-    else
-    {
-      sprintf(error,"Invalid value for parameter INVERTER_MODEL(max 16 characters only): %s",value);
-      modaloSetLastError(EVALIDATE_PARAMETER,error);
-      return 0;
-    }
-  }
-  else if(!strcmp(parameter,"INSTALLED_CAPACITY"))
-  {
-    if(strlen(value)<7 && atoi(value))
-    config->capacity = atoi(value);
-    else
-    {
-      sprintf(error,"Invalid value for parameter INSTALLED_CAPACITY: %s",value);
-      modaloSetLastError(EVALIDATE_PARAMETER,error);
-      return 0;
-    }
-  }
-  else if(!strcmp(parameter,"SAMPLE_INTERVAL"))
-  {
-    if(strlen(value)<6 && atoi(value) && atoi(value) <= 86400)
-    config->sampleInterval = atoi(value);
-    else
-    {
-      sprintf(error,"Invalid value for parameter SAMPLE_INTERVAL: %s",value);
-      modaloSetLastError(EVALIDATE_PARAMETER,error);
-      return 0;
-    }
-  }
-  else if(!strcmp(parameter,"FILE_INTERVAL"))
-  {
-    if(strlen(value)<5 && atoi(value) && atoi(value) <= 1440)
-    config->fileInterval = atoi(value);
-    else
-    {
-      sprintf(error,"Invalid value for parameter FILE_INTERVAL: %s",value);
-      modaloSetLastError(EVALIDATE_PARAMETER,error);
-      return 0;
-    }
-  }
-  else if(!strcmp(parameter,"POLL_INTERVAL"))
-  {
-    if(strlen(value)<6 && atoi(value))
-    config->pollInterval = atoi(value);
-    else
-    {
-      sprintf(error,"Invalid value for parameter POLL_INTERVAL: %s",value);
-      modaloSetLastError(EVALIDATE_PARAMETER,error);
-      return 0;
-    }
-  }
-  else if(!strcmp(parameter,"START_LOG_HHMM"))
-  {
-    if(strlen(value)==4 &&
-        '0'<=value[1] && value[1]<='9' && // 2nd digit 0-9
-        '0'<=value[2] && value[2]<='5' && // 3rd digit 0-5
-        '0'<=value[3] && value[3]<='9' && // 4th digit 0-9
-        ( value[0]!='2' || value[1]<='3'))// check for hour !> 23
-    config->startLog = ((int)atoi(value)/100)*60+atoi(value+2); // valid startLog format
-    else
-    {
-      sprintf(error,"Invalid value for parameter START_LOG_HHMM: %s",value);
-      modaloSetLastError(EVALIDATE_PARAMETER,error);
-      return 0;
-    }
-  }
-  else if(!strcmp(parameter,"STOP_LOG_HHMM"))
-  {
-    if(strlen(value)==4 &&
-        '0'<=value[1] && value[1]<='9' && // 2nd digit 0-9
-        '0'<=value[2] && value[2]<='5' && // 3rd digit 0-5
-        '0'<=value[3] && value[3]<='9' && // 4th digit 0-9
-        ( value[0]!='2' || value[1]<='3'))// check for hour !> 23
-    config->stopLog = ((int)atoi(value)/100)*60+atoi(value+2); // valid startLog format
-    else
-    {
-      sprintf(error,"Invalid value for parameter START_LOG_HHMM: %s",value);
-      modaloSetLastError(EVALIDATE_PARAMETER,error);
-      return 0;
-    }
-  }
-  else { // parameter does not match any validations
-    sprintf(error,"Unknown parameter: %s",parameter);
-    modaloSetLastError(EVALIDATE_PARAMETER,error);
-    return 0;
-  }
-  return 1; //validated successfully
+  return;
 }
 
+// validates device token
+int validateModaloDeviceToken(CONFIG* config, char * indexParameter, char * childParameter, char * value) {
+  char error[MODALO_ERROR_MAXLENGTH] = "";
+  int index = 0;
+
+  // index validation
+  if(!validateModaloIntegerString(indexParameter,1,MAX_MODBUS_DEVICES)) { // out of range
+    sprintf(error,"Invalid index for device_: %s",indexParameter);
+    modaloSetLastError(EPARSE_CONFIG_STRING,error);
+    return 0;
+  }
+  index = atoi(indexParameter)-1; // index validated
+
+  // MAKE value validation
+  if(!strcmp(childParameter,"MAKE") && strlen(value)<MAKE_MODEL_NAMESIZE) { 
+    strcpy(config->device[index].make,value);
+    return 1;
+  }
+
+  // MODEL value validation
+  if(!strcmp(childParameter,"MODEL") && strlen(value)<MAKE_MODEL_NAMESIZE) { 
+    strcpy(config->device[index].model,value);
+    return 1;
+  }
+
+  // ASSETID value validation
+  if(!strcmp(childParameter,"ASSETID") && strlen(value)<MAKE_MODEL_NAMESIZE) { 
+    strcpy(config->device[index].assetID,value);
+    return 1;
+  }
+
+  // CAPACITY value validation
+  if(!strcmp(childParameter,"CAPACITY") && validateModaloIntegerString(value,1000,1000000)) { 
+    config->device[index].capacity=atoi(value);
+    return 1;
+  }
+
+  // plantcode value validation
+  if(!strcmp(childParameter,"PLANTCODE") && validateModaloIntegerString(value,1,9999)) { 
+    config->device[index].plantCode=atoi(value);
+    return 1;
+  }
+
+  // slave ID value validation
+  if(!strcmp(childParameter,"SLAVEID") && validateModaloIntegerString(value,1,255)) { 
+    config->device[index].slaveID=atoi(value);
+    return 1;
+  }
+
+  // did not return => no valid value
+  sprintf(error,"Invalid child parameter or value for device_%s:%s = %s",
+    indexParameter,childParameter,value);
+  modaloSetLastError(EPARSE_CONFIG_STRING,error);
+  return 0;
+}
+
+// validate COMPORT String
+int validateModaloCOMPORTString(char* value) {
+  if(strlen(value)<6 && // maximum length
+  value[0] =='C' &&  
+  value[1] =='O' &&
+  value[2] == 'M' && // check for "COM"
+  '1'<=value[3] && value[3]<='9' && // digit 1-9
+  (( '0'<=value[4] && value[4]<='9') || value[4] == '\0' )) // digit 1-9 or null character
+  return 1; // valid
+  return 0; // invalid
+}
+
+// validate HHMM String
+int validateModaloHHMMString(char* value) {
+  if(strlen(value)==4 && 
+  '0'<=value[1] && value[1]<='9' && // 2nd digit 0-9
+  '0'<=value[2] && value[2]<='5' && // 3rd digit 0-5
+  '0'<=value[3] && value[3]<='9' && // 4th digit 0-9
+  ( value[0]!='2' || value[1]<='3'))// check for hour !> 23
+  return 1; // valid
+  return 0; // invalid
+}
+
+// validates integer string
+int validateModaloIntegerString(char * valString, int lLimit, int uLimit) { 
+  int num = 0;
+  int i=0;
+
+  while(valString[i]!='\0') { // loop over each characters
+    if(valString[i] < '0' || valString[i] > '9') return 0; // not a digit      
+    ++i;
+  }
+  // all digits only
+  num = atoi(valString);
+  if(num>uLimit) return 0; // exceeds upper limit
+  if(num<lLimit) return 0; // exceeds lower limit
+  return 1;                // valid integer string
+}
+
+// validate filePath string
+int validateModaloFilePathString(char* value) {
+  int len = 0;
+
+  len = strlen(value);
+  if(len<FILEPATHSIZE && // less than buffer size
+  value[len-1] == '/') // last character is '/' for signifying folder location
+  return 1; // valid
+  return 0; // invalid
+}
+
+// validates token string
+int validateModaloToken(CONFIG* config, char *parameter, char *value) // validates and saves parameter and value
+{
+  const char delimiter[4]=PARAMETER_SEPARATOR; //separator as delimiter array
+  char error[MODALO_ERROR_MAXLENGTH] = "";
+  char *parentParameter = NULL;
+  char *childParameter = NULL;
+  char *indexParameter = NULL;
+
+  // validation for COM_PORT
+  if(!strcmp(parameter,"COM_PORT") && validateModaloCOMPORTString(value)) {
+    strcpy(config->port,value); // valid port
+    return 1;
+  }
+
+  // validation for BAUD_RATE
+  if(!strcmp(parameter,"BAUD_RATE") && validateModaloIntegerString(value,1000,MAX_BAUD_RATE)) {
+    config->baud = atoi(value);
+    return 1;
+  }
+  
+  // validation for DATA_BITS
+  if(!strcmp(parameter,"DATA_BITS") && validateModaloIntegerString(value,MIN_DATA_BITS,MAX_DATA_BITS)) {
+    config->dataBits = atoi(value);
+    return 1;
+  }
+  
+  // validation for STOP_BITS
+  if(!strcmp(parameter,"STOP_BITS") && validateModaloIntegerString(value,0,2)) {
+    config->stopBits = atoi(value);
+    return 1;
+  }
+  
+  // validation for PARITY
+  if(!strcmp(parameter,"PARITY"))
+  {
+    if(!strcmp(value,"ODD")) { config->parity=PARITY_ODD; return 1; }
+    if(!strcmp(value,"EVEN")) { config->parity=PARITY_EVEN; return 1; }
+    if(!strcmp(value,"NONE")) { config->parity=PARITY_NONE; return 1; }
+  }
+  
+  // validation for device
+  if(!strncmp(parameter,"DEVICE_",7))
+  {
+    parentParameter=strtok(parameter,delimiter); // get device
+    if(parentParameter==NULL) // check for token error
+    {
+      sprintf(error,"Invalid parameter: %s",parameter);
+      modaloSetLastError(EPARSE_CONFIG_STRING,error);
+      return 0;
+    }
+
+    indexParameter=strtok(NULL,delimiter); // get index value
+    if(indexParameter==NULL) // check for token error
+    {
+      sprintf(error,"Invalid parameter index: %s",parameter);
+      modaloSetLastError(EPARSE_CONFIG_STRING,error);
+      return 0;
+    }
+
+    childParameter=strtok(NULL,delimiter); // get child parameter
+    if(childParameter==NULL) // check for token error
+    {
+      sprintf(error,"Invalid child parameter for parent: %s_%s",parentParameter,indexParameter);
+      modaloSetLastError(EPARSE_CONFIG_STRING,error);
+      return 0;
+    }
+    return validateModaloDeviceToken(config,indexParameter,childParameter,value);
+  }
+
+  // validation for SAMPLE_INTERVAL
+  if(!strcmp(parameter,"SAMPLE_INTERVAL") && validateModaloIntegerString(value,1,MAX_SAMPLE_INTERVAL)) {
+    config->sampleInterval = atoi(value);
+    return 1;
+  }
+
+  else if(!strcmp(parameter,"FILE_INTERVAL") && validateModaloIntegerString(value,1,MAX_FILE_INTERVAL)) {
+    config->fileInterval = atoi(value);
+    return 1;
+  }
+
+  // validation for POLL_INTERVAL
+  if(!strcmp(parameter,"POLL_INTERVAL") && validateModaloIntegerString(value,1,MAX_SAMPLE_INTERVAL)) {
+    config->pollInterval = atoi(value);
+    return 1;
+  }
+
+  // validation for START_LOG_HHMM
+  if(!strcmp(parameter,"START_LOG_HHMM") && validateModaloHHMMString(value)) {
+    config->startLog = ((int)atoi(value)/100)*60+atoi(value+2); // valid startLog format
+    return 1;
+  }
+
+  // validation for STOP_LOG_HHMM
+  if(!strcmp(parameter,"STOP_LOG_HHMM") && validateModaloHHMMString(value)) {
+    config->stopLog = ((int)atoi(value)/100)*60+atoi(value+2); // valid startLog format
+    return 1;
+  }
+
+  // validation for LOG_FILEPATH
+  if(!strcmp(parameter,"LOG_FILEPATH") && validateModaloFilePathString(value)) { 
+    strcpy(config->logFilePath,value);
+    return 1;
+  }
+
+  // no validation returned => validation failed
+  sprintf(error,"Invalid parameter or value for %s:%s",parameter,value);
+  modaloSetLastError(EPARSE_CONFIG_STRING,error);
+  return 0;
+}
+
+// parse the config parameter string and passed for further validation
 int parseModaloConfigString(CONFIG* config,char * line)
 {
   const char delimiter[4]=VALUE_SEPARATOR; //separator as delimiter array
@@ -195,7 +260,7 @@ int parseModaloConfigString(CONFIG* config,char * line)
     modaloSetLastError(EPARSE_CONFIG_STRING,"Unknown Parameter!");
     return 0;
   }
-  //parameter retreived
+  //parameter retrieved
   value = strtok(NULL,delimiter);
   if(value==NULL)
   {
@@ -204,28 +269,42 @@ int parseModaloConfigString(CONFIG* config,char * line)
     return 0;
   }
 
-  //value retrived
+  //value retrieved
   return validateModaloToken(config,parameter,value);
 }
 
+// API function to parse configuration file -> Psuedo Entry point to DLL
 MODALO_API int MODALO_CALL parseModaloConfigFile(CONFIG* config, char * FileName)
 {
   FILE *file = NULL; //initialise file handler
   char *lineBuffer = NULL; //initialse lineBuffer pointer
   char error[MODALO_ERROR_MAXLENGTH] = "";
+
+  // clear configuration static variable
+  memset(config,'\0',sizeof(CONFIG));
+
+  // default modbus configurations
   strcpy(config->port,"COM3");
   config->baud=9600;
   config->dataBits=8;
   config->stopBits=1;
   config->parity='N';
-  strcpy(config->make,"SOLIS");
-  strcpy(config->model,"SOLIS-15K");
-  config->capacity=17500;
+
+  // dafult sampling configurations
   config->sampleInterval=60;
   config->fileInterval=900;
   config->pollInterval=5;
   config->startLog=330;
-  config->stopLog=1200; // struct to hold config data
+  config->stopLog=1200;
+  strcpy(config->logFilePath,"../log/");
+
+  // default device configurations
+  config->device[0].capacity = 17500;
+  config->device[0].slaveID = 1;
+  config->device[0].plantCode = 1211;
+  strcpy(config->device[0].make,"SOLIS");
+  strcpy(config->device[0].model,"SOLIS-15K");
+  strcpy(config->device[0].assetID,"123");
 
   file = fopen(FileName,"r"); //open for read
   if(file==NULL) //file open failed
@@ -269,7 +348,8 @@ MODALO_API int MODALO_CALL parseModaloConfigFile(CONFIG* config, char * FileName
         {
           free(lineBuffer);
           fclose(file);
-          return(0);
+          cleanModaloConfigStruct(config); // to clear half parsed configurations and restore default
+          return 0;
         }
       }
     }
@@ -281,13 +361,61 @@ MODALO_API int MODALO_CALL parseModaloConfigFile(CONFIG* config, char * FileName
     modaloSetLastError(EPARSE_CONFIG_FILE,error);
     free(lineBuffer);
     fclose(file);
+    cleanModaloConfigStruct(config); // to clear half parsed configurations and restore default
     return 0;
   }
+  cleanModaloConfigStruct(config); // to clear half parsed configurations and restore default
   fclose(file);
   free(lineBuffer);
   return 1; // parsed successfully
 }
 
+// to print settings of modalo config struct
+MODALO_API void MODALO_CALL printModaloConfig(CONFIG config) {
+  // modbus parameters
+  printf("\nPort: %s\n",config.port);
+  printf("Baud: %d\n",config.baud);
+  printf("Parity: %d\n",config.parity);
+  printf("Stop Bits: %d\n",config.stopBits);
+
+  // sampling and logging parameters
+  printf("Sample interval: %d\n",config.sampleInterval);
+  printf("File interval: %d\n",config.fileInterval);
+  printf("Poll interval: %d\n",config.pollInterval);
+  printf("Start Log min: %d\n",config.startLog);
+  printf("Stop log min: %d\n",config.stopLog);
+  printf("Log file path: %s\n",config.logFilePath);
+
+  // device parameters
+  for(int i=0;i<MAX_MODBUS_DEVICES;i++)   {
+    if(config.device[i].slaveID == 0) continue; // empty device configuration
+    printf("Device %d - Make: %s\n",i+1,config.device[i].make);
+    printf("Device %d - Model: %s\n",i+1,config.device[i].model);
+    printf("Device %d - Asset ID: %s\n",i+1,config.device[i].assetID);
+    printf("Device %d - Slave ID: %d\n",i+1,config.device[i].slaveID);
+    printf("Device %d - Plant Code: %d\n",i+1,config.device[i].plantCode);
+    printf("Device %d - Capacity: %d\n",i+1,config.device[i].capacity);
+  }
+  printf("\n");
+}
+
+// to print mapping of modalo map structure
+MODALO_API void MODALO_CALL printModaloMap(MAP map) {
+  int i=0;
+  for(i=0;i<map.mapSize;i++) {
+    printf("\nReg Name: %s\n",map.reg[i].regName);
+    printf("Reg Add: %d\n",map.reg[i].regAddress);
+    printf("Reg SizeU16: %d\n",map.reg[i].regSizeU16);
+    printf("Byte Reverse: %d\n",map.reg[i].byteReversed);
+    printf("Bit Reverse: %d\n",map.reg[i].bitReversed);
+    printf("Function Code: %d\n",map.reg[i].functionCode);
+    printf("Multiplier:  %d\n",map.reg[i].multiplier);
+    printf("Divisor: %d\n",map.reg[i].divisor);
+    printf("Moving Avg Filter: %d\n",map.reg[i].movingAvgFilter);
+  }
+}
+
+// parses and entire file to buffer and then returns pointer : Memory to be made free after use. 
 char* readFileToBuffer(char * fileName)
 {
   cJSON* root=NULL; // hold root object
@@ -357,12 +485,14 @@ char* readFileToBuffer(char * fileName)
   }
 }
 
+// To free MAP allocated by JSON Parser
 MODALO_API void MODALO_CALL freeMAP(MAP map)
 {
   free(map.reg);
 }
 
-MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName) // if u use this function, then u should free the memory using freeMAP()
+// API function to parse JSON. After use u should free the memory using freeMAP()
+MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName) 
 {
   cJSON* root = NULL; //for holding root Object
   cJSON* model = NULL; // for holding the model Object
