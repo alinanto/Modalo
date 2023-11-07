@@ -1,0 +1,109 @@
+{
+  "RPI": [
+    {
+      "regName": "Power_Generation_(W)",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 49152,
+      "regSizeU16": 1,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "EnergyToday",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2048,
+      "regSizeU16": 2,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    }
+  ],
+
+
+
+
+  "RPI-UNUSED" : [
+    {
+      "regName": "DCPower",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 45056,
+      "regSizeU16": 1,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TotalEnergy",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 1076,
+      "regSizeU16": 2,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "EnergyThisMonth",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2112,
+      "regSizeU16": 2,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "EnergyLastMonth",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2114,
+      "regSizeU16": 2,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "EnergyLastDay",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2050,
+      "regSizeU16": 2,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "EnergyThisYear",
+      "regSizeU16": 2,
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "regAddress": 2096,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "EnergyLastYear",
+      "regSizeU16": 2,
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "regAddress": 2098,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    }
+  ]
+}

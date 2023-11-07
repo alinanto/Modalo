@@ -1,0 +1,26 @@
+{
+  "SOFAR": [
+    {
+      "regName": "Power_Generation_(W)",
+      "regAddress": 533,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "Todays_Generation_(KWh)",
+      "regAddress": 536,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 1,
+      "divisor" : 100,
+      "movingAvgFilter": false
+    }
+  ]
+}

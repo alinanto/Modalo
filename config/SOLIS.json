@@ -1,0 +1,108 @@
+{
+  "SOLIS-15K": [
+    {
+      "regName": "Power_Generation_(W)",
+      "regAddress": 3004,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "Todays_Generation_(KWh)",
+      "regAddress": 3014,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 100,
+      "divisor" : 1000,
+      "movingAvgFilter": false
+    }
+  ],
+
+
+
+  "SOLIS-UNUSED" : [
+    {
+      "regName": "DCPower",
+      "regAddress": 3006,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TotalEnergy",
+      "regAddress": 3008,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1000,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "EnergyThisMonth",
+      "regAddress": 3010,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1000,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "EnergyLastMonth",
+      "regAddress": 3012,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1000,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "EnergyLastDay",
+      "regAddress": 3015,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 100,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "EnergyThisYear",
+      "regAddress": 3016,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1000,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "EnergyLastYear",
+      "regAddress": 3018,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1000,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    }
+  ]
+}
