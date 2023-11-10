@@ -21,6 +21,7 @@ No part/piece may be reused without explicit permission of POWERGRID */
 4) Add plant code and asset ID into log file name
 5) log file path change to dynamically read from config file
 6) Cleaned and optimised token validation function
+7) Fixed Bug while printing parity
 */
 // windows runtime libraries
 #include <stdio.h>

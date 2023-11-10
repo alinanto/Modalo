@@ -372,10 +372,14 @@ MODALO_API int MODALO_CALL parseModaloConfigFile(CONFIG* config, char * FileName
 
 // to print settings of modalo config struct
 MODALO_API void MODALO_CALL printModaloConfig(CONFIG config) {
+  char parityString [] = "NONE";
+  if(config.parity=='O') strcpy(parityString,"ODD");
+  if(config.parity=='E') strcpy(parityString,"EVEN");
+ 
   // modbus parameters
   printf("\nPort: %s\n",config.port);
   printf("Baud: %d\n",config.baud);
-  printf("Parity: %d\n",config.parity);
+  printf("Parity: %s\n",parityString);
   printf("Stop Bits: %d\n",config.stopBits);
 
   // sampling and logging parameters
