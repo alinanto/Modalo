@@ -405,17 +405,16 @@ MODALO_API void MODALO_CALL printModaloConfig(CONFIG config) {
 
 // to print mapping of modalo map structure
 MODALO_API void MODALO_CALL printModaloMap(MAP map) {
-  int i=0;
-  for(i=0;i<map.mapSize;i++) {
-    printf("\nReg Name: %s\n",map.reg[i].regName);
-    printf("Reg Add: %d\n",map.reg[i].regAddress);
-    printf("Reg SizeU16: %d\n",map.reg[i].regSizeU16);
-    printf("Byte Reverse: %d\n",map.reg[i].byteReversed);
-    printf("Bit Reverse: %d\n",map.reg[i].bitReversed);
-    printf("Function Code: %d\n",map.reg[i].functionCode);
-    printf("Multiplier:  %d\n",map.reg[i].multiplier);
-    printf("Divisor: %d\n",map.reg[i].divisor);
-    printf("Moving Avg Filter: %d\n",map.reg[i].movingAvgFilter);
+  for(map.regIndex=0;map.regIndex<map.mapSize;map.regIndex++) {
+    printf("\nReg Name: %s\n",map.reg[map.regIndex].regName);
+    printf("Reg Add: %d\n",map.reg[map.regIndex].regAddress);
+    printf("Reg SizeU16: %d\n",map.reg[map.regIndex].regSizeU16);
+    printf("Byte Reverse: %d\n",map.reg[map.regIndex].byteReversed);
+    printf("Bit Reverse: %d\n",map.reg[map.regIndex].bitReversed);
+    printf("Function Code: %d\n",map.reg[map.regIndex].functionCode);
+    printf("Multiplier:  %d\n",map.reg[map.regIndex].multiplier);
+    printf("Divisor: %d\n",map.reg[map.regIndex].divisor);
+    printf("Moving Avg Filter: %d\n",map.reg[map.regIndex].movingAvgFilter);
   }
 }
 
@@ -537,7 +536,7 @@ MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName)
     return map;
   }
 
-  int i=0; // itteration variable
+  map.regIndex=0; // itteration variable
   cJSON_ArrayForEach(reg,model) { //MACRO to itterate over array
     cJSON* regName = cJSON_GetObjectItemCaseSensitive(reg,"regName");
     cJSON* regAddress = cJSON_GetObjectItemCaseSensitive(reg,"regAddress");
@@ -550,27 +549,27 @@ MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName)
     cJSON* movingAvgFilter = cJSON_GetObjectItemCaseSensitive(reg,"movingAvgFilter");
 
     if(cJSON_IsString(regName) && strlen(regName->valuestring)<REGNAME_MAXSIZE) // regName validated
-      strcpy(map.reg[i].regName,regName->valuestring);
+      strcpy(map.reg[map.regIndex].regName,regName->valuestring);
     else break;
 
     //default type validations
-    if(cJSON_IsNumber(regAddress)) map.reg[i].regAddress = regAddress->valueint; else break;//validated
-    if(cJSON_IsNumber(regSizeU16)) map.reg[i].regSizeU16 = regSizeU16->valueint; else break;//validated
-    if(cJSON_IsBool(byteReversed)) map.reg[i].byteReversed = byteReversed->valueint; else break;//validated
-    if(cJSON_IsBool(bitReversed)) map.reg[i].bitReversed = bitReversed->valueint; else break;//validated
-    if(cJSON_IsNumber(functionCode)) map.reg[i].functionCode = functionCode->valueint; else break;//validated
-    if(cJSON_IsNumber(multiplier)) map.reg[i].multiplier = multiplier->valueint; else break;//validated
-    if(cJSON_IsNumber(divisor)) map.reg[i].divisor = divisor->valueint; else break;//validated
-    if(cJSON_IsBool(movingAvgFilter)) map.reg[i].movingAvgFilter = movingAvgFilter->valueint; else break;//validated
+    if(cJSON_IsNumber(regAddress)) map.reg[map.regIndex].regAddress = regAddress->valueint; else break;//validated
+    if(cJSON_IsNumber(regSizeU16)) map.reg[map.regIndex].regSizeU16 = regSizeU16->valueint; else break;//validated
+    if(cJSON_IsBool(byteReversed)) map.reg[map.regIndex].byteReversed = byteReversed->valueint; else break;//validated
+    if(cJSON_IsBool(bitReversed)) map.reg[map.regIndex].bitReversed = bitReversed->valueint; else break;//validated
+    if(cJSON_IsNumber(functionCode)) map.reg[map.regIndex].functionCode = functionCode->valueint; else break;//validated
+    if(cJSON_IsNumber(multiplier)) map.reg[map.regIndex].multiplier = multiplier->valueint; else break;//validated
+    if(cJSON_IsNumber(divisor)) map.reg[map.regIndex].divisor = divisor->valueint; else break;//validated
+    if(cJSON_IsBool(movingAvgFilter)) map.reg[map.regIndex].movingAvgFilter = movingAvgFilter->valueint; else break;//validated
 
     //extra validations based on implementation
-    if(map.reg[i].regSizeU16 != 1 && map.reg[i].regSizeU16 != 2) break; // error if regSize is neither 1 or 2
-    if(map.reg[i].multiplier == 0 || map.reg[i].divisor == 0) break; // error if either multiplier or divisor is zero
+    if(map.reg[map.regIndex].regSizeU16 != 1 && map.reg[map.regIndex].regSizeU16 != 2) break; // error if regSize is neither 1 or 2
+    if(map.reg[map.regIndex].multiplier == 0 || map.reg[map.regIndex].divisor == 0) break; // error if either multiplier or divisor is zero
 
-    i++;
-    if(i==map.mapSize) break;
+    map.regIndex++;
+    if(map.regIndex==map.mapSize) break;
   }
-  if(i!=map.mapSize) { //parse error: one of the validation has failed and loop has breaked.
+  if(map.regIndex!=map.mapSize) { //parse error: one of the validation has failed and loop has breaked.
     modaloSetLastError(EPARSE_CJSON_STRING,"JSON map not as per modalo standard. (refer documentation)");
     free(file);
     cJSON_Delete(root);
@@ -580,6 +579,7 @@ MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName)
   }
 
   //parsed successfully
+  map.regIndex = 0; //reset iteration variable
   free(file);
   cJSON_Delete(root);
   return map;

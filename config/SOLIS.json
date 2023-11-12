@@ -1,7 +1,7 @@
 {
   "SOLIS-15K": [
     {
-      "regName": "Power_Generation_(W)",
+      "regName": "PowerGeneration_(W)",
       "regAddress": 3004,
       "regSizeU16": 2,
       "byteReversed": false,
@@ -12,14 +12,14 @@
       "movingAvgFilter": true
     },
     {
-      "regName": "Todays_Generation_(KWh)",
+      "regName": "TodaysGeneration_(kWh)",
       "regAddress": 3014,
       "regSizeU16": 1,
       "byteReversed": false,
       "bitReversed": false,
       "functionCode": 4,
-      "multiplier": 100,
-      "divisor" : 1000,
+      "multiplier": 1,
+      "divisor" : 10,
       "movingAvgFilter": false
     }
   ],
@@ -28,7 +28,29 @@
 
   "SOLIS-UNUSED" : [
     {
-      "regName": "DCPower",
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 3004,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "regAddress": 3014,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "PowerGenerationDC_(W)",
       "regAddress": 3006,
       "regSizeU16": 2,
       "byteReversed": false,
@@ -39,68 +61,68 @@
       "movingAvgFilter": true
     },
     {
-      "regName": "TotalEnergy",
+      "regName": "TotalEnergy_(kWh)",
       "regAddress": 3008,
       "regSizeU16": 2,
       "byteReversed": false,
       "bitReversed": false,
       "functionCode": 4,
-      "multiplier": 1000,
+      "multiplier": 1,
       "divisor" : 1,
       "movingAvgFilter": false
     },
     {
-      "regName": "EnergyThisMonth",
+      "regName": "EnergyThisMonth_(kWh)",
       "regAddress": 3010,
       "regSizeU16": 2,
       "byteReversed": false,
       "bitReversed": false,
       "functionCode": 4,
-      "multiplier": 1000,
+      "multiplier": 1,
       "divisor" : 1,
       "movingAvgFilter": false
     },
     {
-      "regName": "EnergyLastMonth",
+      "regName": "EnergyLastMonth_(kWh)",
       "regAddress": 3012,
       "regSizeU16": 2,
       "byteReversed": false,
       "bitReversed": false,
       "functionCode": 4,
-      "multiplier": 1000,
+      "multiplier": 1,
       "divisor" : 1,
       "movingAvgFilter": false
     },
     {
-      "regName": "EnergyLastDay",
+      "regName": "EnergyLastDay_(kWh)",
       "regAddress": 3015,
       "regSizeU16": 1,
       "byteReversed": false,
       "bitReversed": false,
       "functionCode": 4,
-      "multiplier": 100,
-      "divisor" : 1,
+      "multiplier": 1,
+      "divisor" : 10,
       "movingAvgFilter": false
     },
     {
-      "regName": "EnergyThisYear",
+      "regName": "EnergyThisYear_(kWh)",
       "regAddress": 3016,
       "regSizeU16": 2,
       "byteReversed": false,
       "bitReversed": false,
       "functionCode": 4,
-      "multiplier": 1000,
+      "multiplier": 1,
       "divisor" : 1,
       "movingAvgFilter": false
     },
     {
-      "regName": "EnergyLastYear",
+      "regName": "EnergyLastYear_(kWh)",
       "regAddress": 3018,
       "regSizeU16": 2,
       "byteReversed": false,
       "bitReversed": false,
       "functionCode": 4,
-      "multiplier": 1000,
+      "multiplier": 1,
       "divisor" : 1,
       "movingAvgFilter": false
     }

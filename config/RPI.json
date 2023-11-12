@@ -1,7 +1,7 @@
 {
   "RPI": [
     {
-      "regName": "Power_Generation_(W)",
+      "regName": "PowerGeneration_(W)",
       "byteReversed": false,
       "bitReversed": false,
       "functionCode": 4,
@@ -12,7 +12,7 @@
       "movingAvgFilter": true
     },
     {
-      "regName": "EnergyToday",
+      "regName": "TodaysGeneration_(kWh)",
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,

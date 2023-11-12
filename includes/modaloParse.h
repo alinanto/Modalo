@@ -40,6 +40,28 @@ extern "C"
 #define MAX_FILE_INTERVAL 1440
 #define FILEPATHSIZE 128
 
+// structure definitions for holding register information
+typedef struct REG {
+  char regName[REGNAME_MAXSIZE];
+  uint16_t regAddress;
+  uint16_t regSizeU16;
+  uint16_t byteReversed;
+  uint16_t bitReversed;
+  uint16_t functionCode;
+  uint16_t multiplier;
+  uint16_t divisor;
+  uint16_t movingAvgFilter;
+  uint16_t valueU16[2];
+  float value;
+}REG;
+
+// structure definitions for holding map information
+typedef struct MAP {
+  REG* reg;              //pointer to dynamically allocated reg array
+  size_t mapSize;        //size of the reg array
+  unsigned int regIndex; //variable to itterate over reg if needed.
+}MAP;
+
 // structure for holding DEVICE specific informations
 typedef struct DEVICE {
   char make[MAKE_MODEL_NAMESIZE];
@@ -48,10 +70,11 @@ typedef struct DEVICE {
   unsigned int capacity;
   unsigned int plantCode;
   unsigned int slaveID;
+  MAP map;
 }DEVICE;
 
 // structure definitions for holding configuration information
-typedef struct CONFIG_STRUCT {
+typedef struct CONFIG{
   // modbus configurations
   char port[6];
   unsigned int baud;
@@ -71,26 +94,8 @@ typedef struct CONFIG_STRUCT {
   DEVICE device[MAX_MODBUS_DEVICES];
 }CONFIG;
 
-// structure definitions for holding register information
-typedef struct REG {
-  char regName[REGNAME_MAXSIZE];
-  uint16_t regAddress;
-  uint16_t regSizeU16;
-  uint16_t byteReversed;
-  uint16_t bitReversed;
-  uint16_t functionCode;
-  uint16_t multiplier;
-  uint16_t divisor;
-  uint16_t movingAvgFilter;
-  uint16_t valueU16[2];
-  float value;
-}REG;
-
-// structure definitions for holding map information
-typedef struct MAP {
-  REG* reg;
-  size_t mapSize;
-}MAP;
+//macro definitions
+_MODALO_forEachDevice(i) for(int i=0;i<MAX_MODBUS_DEVICES;i++)
 
 //API functions
 MODALO_API int MODALO_CALL parseModaloConfigFile(CONFIG* config, char * FileName);

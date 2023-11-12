@@ -15,7 +15,3 @@ gcc -L bin/ -I includes/ -o bin/libparse-modalo.dll -s -shared src/modaloParse.c
 
 :: combiling main application modalo - always recombile
 gcc -L bin/ -I includes/ -o bin/Modalo.exe -w -s src/main.c -lmodbus -lparse-modalo -lerror-modalo
-
-cd bin/
-Modalo.exe
-cd ../

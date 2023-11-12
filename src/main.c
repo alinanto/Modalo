@@ -30,7 +30,6 @@ No part/piece may be reused without explicit permission of POWERGRID */
 #include <string.h>
 #include <time.h>
 #include <windows.h>
-#include <stdio.h>
 
 // headers to my dll libraris
 #include "modbus.h"
@@ -61,14 +60,13 @@ int main(int argc, char *argv[])
   // variables related to logfile
   char logFileName [FILEPATHSIZE] = "modalo_PPPP_AAAAAAAA_YYYY_MM_DD_HH_MM_SS.csv";
   FILE *logFileHandle = NULL;  // Handle for holding log file
+  int startLoggingFLag=0; // Flag for starting logging
 
   // variables related to configuration and mapping table and modbus
-  CONFIG config; // for storing configuration VALUES
+  CONFIG config; // for storing modbus configuration, logging configuration and device configuration 
   modbus_t *ctx=NULL; // modbus context pointer
   char mapFileName [FILEPATHSIZE] = "../config/SOLIS.json";
-  MAP map; // mapfile for reg mappings
-  int regIndex=0; // index for register
-
+  
   printf("Parsing configuration File: %s\n",CONFIGFILE);
   if(!parseModaloConfigFile(&config,CONFIGFILE)) // parse failed
   {
@@ -77,6 +75,9 @@ int main(int argc, char *argv[])
   }
   printModaloConfig(config);
 
+  for(int i=0;i<MAX_MODBUS_DEVICES;i++) {
+    
+  }
   sprintf(mapFileName,"../config/%s.json",config.device[0].make);
   printf("Parsing json file for reg map: %s\n",mapFileName);
   map = parseModaloJSONFile(mapFileName,config.device[0].model);
@@ -99,7 +100,7 @@ int main(int argc, char *argv[])
   localTimeS = localtime(&seconds); // update time structure with local time
   UTCTimeS = gmtime(&seconds); //update time structure with UTC Time
 
-  sprintf(logFileName,"modalo_%d_%s_%04d_%02d_%02d_%02d_%02d_%02d.csv",
+  sprintf(logFileName,"modalo_%d_%s_%04d%02d%02dT%02d%02d%02dz.csv",
     config.device[0].plantCode, // plant code
     config.device[0].assetID,   // asset ID
     UTCTimeS->tm_year+1900, // The number of years since 1900
@@ -109,7 +110,7 @@ int main(int argc, char *argv[])
     UTCTimeS->tm_min,       // minutes, range 0 to 59
     UTCTimeS->tm_sec);      //update the ISO 8601 time strings
 
-  printf("New File: %s%s\n",config.logFilePath,logFileName);
+  printf("\nNew File: %s%s\n",config.logFilePath,logFileName);
   seconds = 0; // reset seconds to enter loop without delay
 
   do{
@@ -122,8 +123,9 @@ int main(int argc, char *argv[])
     UTCTimeS = gmtime(&seconds); // update time structure with UTC time
 
     if(localTimeS->tm_sec == 0) { // 1 minute timer
+      
       if((localTimeS->tm_min+(localTimeS->tm_hour*60)-config.startLog)%config.fileInterval == 0) { //file interval starts
-        sprintf(logFileName,"modalo_%d_%s_%04d_%02d_%02d_%02d_%02d_%02d.csv",
+        sprintf(logFileName,"modalo_%d_%s_%04d%02d%02dT%02d%02d%02dz.csv",
           config.device[0].plantCode, // plant code
           config.device[0].assetID,   // asset ID
           UTCTimeS->tm_year+1900, // The number of years since 1900
@@ -133,13 +135,13 @@ int main(int argc, char *argv[])
           UTCTimeS->tm_min,       // minutes, range 0 to 59
           UTCTimeS->tm_sec);      //update the ISO 8601 time strings
 
-        printf("New File: %s\n",logFileName);
+        printf("\nNew File: %s\n",logFileName);
       } // file interval ends.
     } // 1 minute timer ends
 
     if(seconds%config.pollInterval == 0) { //poll interval starts
-      if(!readReg(ctx,&map.reg[regIndex])) modaloPrintLastError();
-      if(++regIndex==map.mapSize) regIndex=0; // reset index
+      if(!readReg(ctx,&map.reg[map.regIndex])) modaloPrintLastError();
+      if(++map.regIndex==map.mapSize) map.regIndex=0; // reset index
     } // poll interval ends.
 
     if(seconds%config.sampleInterval == 0) { //sample interval starts
@@ -229,7 +231,7 @@ int readReg(modbus_t* ctx, REG* reg)
 
   if(reg->regSizeU16 == 2) { // U32
     reg->value = (float)((reg->valueU16[0]*65536 + reg->valueU16[1]) * reg->multiplier)/ reg->divisor;
-    printf("REGNAME:%s, RAWVALUE:0x%04X%04X, VALUE:%0.2f\n",
+    printf("\rREGNAME:%s, RAWVALUE:0x%04X%04X, VALUE:%0.2f                      ",
       reg->regName,
       reg->valueU16[0],
       reg->valueU16[1],
@@ -239,7 +241,7 @@ int readReg(modbus_t* ctx, REG* reg)
   }
   // U16
   reg->value = (float)(reg->valueU16[0] * reg->multiplier)/ reg->divisor;
-  printf("REGNAME:%s, RAWVALUE:0x%04X, VALUE:%0.2f\n",
+  printf("\rREGNAME:%s, RAWVALUE:0x%04X, VALUE:%0.2f                            ",
     reg->regName,
     reg->valueU16[0],
     reg->value);
