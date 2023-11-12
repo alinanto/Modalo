@@ -4,7 +4,10 @@
         {
             "label": "echo",
             "type": "shell",
-            "command": "./combile.bat"
+            "command": "./combile.bat",
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Build using mingw64"
         }
     ]
 }
