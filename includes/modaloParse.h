@@ -23,26 +23,26 @@ extern "C"
 
 #define VALUE_SEPARATOR " \n"
 #define PARAMETER_SEPARATOR "_"
-#define MAXLINELENGTH 50
-#define COMMENT_CHAR '#'
+#define MAXLINELENGTH 50          // max line length read at once in config file
+#define COMMENT_CHAR '#'          // comment character in config file
 #define BUFFER_SIZE 1024         // 1kb Buffer
 #define MAX_FILESIZE 1024*1024*2 // 2MB file
-#define REGNAME_MAXSIZE 30
 #define PARITY_ODD 'O'
 #define PARITY_EVEN 'E'
 #define PARITY_NONE 'N'
-#define MAKE_MODEL_NAMESIZE 16
-#define MAX_MODBUS_DEVICES 15
+#define MAXNAMESIZE 32            // maximum size of make, model, asset ID, regName
+#define MAX_MODBUS_DEVICES 15     // maximum no. of modbus devices
 #define MAX_BAUD_RATE 199999
 #define MAX_DATA_BITS 32
 #define MIN_DATA_BITS 8
 #define MAX_SAMPLE_INTERVAL 86400
 #define MAX_FILE_INTERVAL 1440
-#define FILEPATHSIZE 128
+#define FILEPATHSIZE 128          // maximum length of file path
+#define FILENAMESIZE 80           // maximum length of file name
 
 // structure definitions for holding register information
 typedef struct REG {
-  char regName[REGNAME_MAXSIZE];
+  char regName[MAXNAMESIZE];
   uint16_t regAddress;
   uint16_t regSizeU16;
   uint16_t byteReversed;
@@ -64,13 +64,14 @@ typedef struct MAP {
 
 // structure for holding DEVICE specific informations
 typedef struct DEVICE {
-  char make[MAKE_MODEL_NAMESIZE];
-  char model[MAKE_MODEL_NAMESIZE];  
-  char assetID[MAKE_MODEL_NAMESIZE];
+  char make[MAXNAMESIZE];
+  char model[MAXNAMESIZE];  
+  char assetID[MAXNAMESIZE];
   unsigned int capacity;
   unsigned int plantCode;
   unsigned int slaveID;
   MAP map;
+  char logFileName[FILENAMESIZE]; // "modalo_PPPP_AAAAAAAA_YYYYMMDDTHHMMSSz.csv"
 }DEVICE;
 
 // structure definitions for holding configuration information
@@ -92,10 +93,17 @@ typedef struct CONFIG{
 
   // DEVICE specific configurations
   DEVICE device[MAX_MODBUS_DEVICES];
+  unsigned int devIndex; //variable to itterate over devices if needed.
+  
 }CONFIG;
 
 //macro definitions
-_MODALO_forEachDevice(i) for(int i=0;i<MAX_MODBUS_DEVICES;i++)
+
+// loop for each device a in config struct b
+#define _MODALO_forEachDevice(a,b) b.devIndex=0;for(DEVICE* a=b.device;b.devIndex<MAX_MODBUS_DEVICES;b.devIndex++,a=&b.device[b.devIndex])
+
+//loop for each register a in map struct b
+#define _MODALO_forEachReg(a,b) b.regIndex=0;for(REG* a=b.reg;b.regIndex<b.mapSize;b.regIndex++,a=&b.reg[b.regIndex])
 
 //API functions
 MODALO_API int MODALO_CALL parseModaloConfigFile(CONFIG* config, char * FileName);

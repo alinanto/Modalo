@@ -34,19 +34,19 @@ int validateModaloDeviceToken(CONFIG* config, char * indexParameter, char * chil
   index = atoi(indexParameter)-1; // index validated
 
   // MAKE value validation
-  if(!strcmp(childParameter,"MAKE") && strlen(value)<MAKE_MODEL_NAMESIZE) { 
+  if(!strcmp(childParameter,"MAKE") && strlen(value)<MAXNAMESIZE) { 
     strcpy(config->device[index].make,value);
     return 1;
   }
 
   // MODEL value validation
-  if(!strcmp(childParameter,"MODEL") && strlen(value)<MAKE_MODEL_NAMESIZE) { 
+  if(!strcmp(childParameter,"MODEL") && strlen(value)<MAXNAMESIZE) { 
     strcpy(config->device[index].model,value);
     return 1;
   }
 
   // ASSETID value validation
-  if(!strcmp(childParameter,"ASSETID") && strlen(value)<MAKE_MODEL_NAMESIZE) { 
+  if(!strcmp(childParameter,"ASSETID") && strlen(value)<MAXNAMESIZE) { 
     strcpy(config->device[index].assetID,value);
     return 1;
   }
@@ -386,25 +386,35 @@ MODALO_API void MODALO_CALL printModaloConfig(CONFIG config) {
   printf("Sample interval: %d\n",config.sampleInterval);
   printf("File interval: %d\n",config.fileInterval);
   printf("Poll interval: %d\n",config.pollInterval);
-  printf("Start Log min: %d\n",config.startLog);
-  printf("Stop log min: %d\n",config.stopLog);
+  printf("Start Log min: %d\n",config.startLog);  printf("Stop log min: %d\n",config.stopLog);
   printf("Log file path: %s\n",config.logFilePath);
 
   // device parameters
-  for(int i=0;i<MAX_MODBUS_DEVICES;i++)   {
-    if(config.device[i].slaveID == 0) continue; // empty device configuration
-    printf("Device %d - Make: %s\n",i+1,config.device[i].make);
-    printf("Device %d - Model: %s\n",i+1,config.device[i].model);
-    printf("Device %d - Asset ID: %s\n",i+1,config.device[i].assetID);
-    printf("Device %d - Slave ID: %d\n",i+1,config.device[i].slaveID);
-    printf("Device %d - Plant Code: %d\n",i+1,config.device[i].plantCode);
-    printf("Device %d - Capacity: %d\n",i+1,config.device[i].capacity);
+  _MODALO_forEachDevice(device,config) {
+    if(device->slaveID == 0) continue; // empty device configuration
+    printf("Device %d - Make: %s\n",config.devIndex+1,device->make);
+    printf("Device %d - Model: %s\n",config.devIndex+1,device->model);
+    printf("Device %d - Asset ID: %s\n",config.devIndex+1,device->assetID);
+    printf("Device %d - Slave ID: %d\n",config.devIndex+1,device->slaveID);
+    printf("Device %d - Plant Code: %d\n",config.devIndex+1,device->plantCode);
+    printf("Device %d - Capacity: %d\n",config.devIndex+1,device->capacity);
   }
   printf("\n");
 }
 
 // to print mapping of modalo map structure
 MODALO_API void MODALO_CALL printModaloMap(MAP map) {
+  _MODALO_forEachReg(reg,map) {
+    printf("\nReg Name: %s\n",reg->regName);
+    printf("Reg Add: %d\n",reg->regAddress);
+    printf("Reg SizeU16: %d\n",reg->regSizeU16);
+    printf("Byte Reverse: %d\n",reg->byteReversed);
+    printf("Bit Reverse: %d\n",reg->bitReversed);
+    printf("Function Code: %d\n",reg->functionCode);
+    printf("Multiplier:  %d\n",reg->multiplier);
+    printf("Divisor: %d\n",reg->divisor);
+    printf("Moving Avg Filter: %d\n",reg->movingAvgFilter);
+  } /*
   for(map.regIndex=0;map.regIndex<map.mapSize;map.regIndex++) {
     printf("\nReg Name: %s\n",map.reg[map.regIndex].regName);
     printf("Reg Add: %d\n",map.reg[map.regIndex].regAddress);
@@ -415,7 +425,7 @@ MODALO_API void MODALO_CALL printModaloMap(MAP map) {
     printf("Multiplier:  %d\n",map.reg[map.regIndex].multiplier);
     printf("Divisor: %d\n",map.reg[map.regIndex].divisor);
     printf("Moving Avg Filter: %d\n",map.reg[map.regIndex].movingAvgFilter);
-  }
+  } */
 }
 
 // parses and entire file to buffer and then returns pointer : Memory to be made free after use. 
@@ -548,7 +558,7 @@ MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName)
     cJSON* divisor = cJSON_GetObjectItemCaseSensitive(reg,"divisor");
     cJSON* movingAvgFilter = cJSON_GetObjectItemCaseSensitive(reg,"movingAvgFilter");
 
-    if(cJSON_IsString(regName) && strlen(regName->valuestring)<REGNAME_MAXSIZE) // regName validated
+    if(cJSON_IsString(regName) && strlen(regName->valuestring)<MAXNAMESIZE) // regName validated
       strcpy(map.reg[map.regIndex].regName,regName->valuestring);
     else break;
 

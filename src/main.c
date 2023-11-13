@@ -13,6 +13,7 @@ No part/piece may be reused without explicit permission of POWERGRID */
 3) WINAPI main for hiding console window
 4) preprocessor directives for supporting verbose mode
 5) Add functionality for polling multiple devices
+6) Implement log file name as dynamically allocated and only pointer part of device config
 
 /*  Completed Work
 1) Fixed bug in file interval - Active thorughout the valid minute
@@ -58,15 +59,14 @@ int main(int argc, char *argv[])
 	struct tm *localTimeS, *UTCTimeS; // for time holding structure in windows time API
 
   // variables related to logfile
-  char logFileName [FILEPATHSIZE] = "modalo_PPPP_AAAAAAAA_YYYY_MM_DD_HH_MM_SS.csv";
-  FILE *logFileHandle = NULL;  // Handle for holding log file
   int startLoggingFLag=0; // Flag for starting logging
 
   // variables related to configuration and mapping table and modbus
   CONFIG config; // for storing modbus configuration, logging configuration and device configuration 
   modbus_t *ctx=NULL; // modbus context pointer
-  char mapFileName [FILEPATHSIZE] = "../config/SOLIS.json";
+  char mapFileName [MAXNAMESIZE+20] = "../config/SOLIS.json";
   
+  // parse the configuration file
   printf("Parsing configuration File: %s\n",CONFIGFILE);
   if(!parseModaloConfigFile(&config,CONFIGFILE)) // parse failed
   {
@@ -75,18 +75,7 @@ int main(int argc, char *argv[])
   }
   printModaloConfig(config);
 
-  for(int i=0;i<MAX_MODBUS_DEVICES;i++) {
-    
-  }
-  sprintf(mapFileName,"../config/%s.json",config.device[0].make);
-  printf("Parsing json file for reg map: %s\n",mapFileName);
-  map = parseModaloJSONFile(mapFileName,config.device[0].model);
-  if(map.reg == NULL){
-    modaloPrintLastError();
-    return -1;
-  }
-  printModaloMap(map);
-
+  // initialise modbus  
   printf("\nInitialsing modbus connection.\n");
   ctx=initialiseModbus(&config);
 	if(ctx==NULL) //modbus failed to initialise
@@ -100,19 +89,37 @@ int main(int argc, char *argv[])
   localTimeS = localtime(&seconds); // update time structure with local time
   UTCTimeS = gmtime(&seconds); //update time structure with UTC Time
 
-  sprintf(logFileName,"modalo_%d_%s_%04d%02d%02dT%02d%02d%02dz.csv",
-    config.device[0].plantCode, // plant code
-    config.device[0].assetID,   // asset ID
-    UTCTimeS->tm_year+1900, // The number of years since 1900
-    UTCTimeS->tm_mon+1,     // month, range 0 to 11
-    UTCTimeS->tm_mday,      // day of the month, range 1 to 31
-    UTCTimeS->tm_hour,      // hours, range 0 to 23
-    UTCTimeS->tm_min,       // minutes, range 0 to 59
-    UTCTimeS->tm_sec);      //update the ISO 8601 time strings
+  _MODALO_forEachDevice(device,config) { // MACRO to loop over each device in config structure
+    if(device->slaveID == 0) continue;   // skip over empty device declarations
 
-  printf("\nNew File: %s%s\n",config.logFilePath,logFileName);
+    // starting to read map files and save to device configuration structure
+    sprintf(mapFileName,"../config/%s.json",device->make);
+    printf("Parsing json file for reg map: %s\n",mapFileName);
+    device->map = parseModaloJSONFile(mapFileName,device->model); // get map from JSON file
+    if(device->map.reg == NULL){ // handle error
+      modaloPrintLastError();
+      return -1;
+    }
+    printf("\nDevice %d mapping table\n",config.devIndex);
+    printModaloMap(device->map); // print mapping after success
+
+    // update log file name for each device first use
+    sprintf(device->logFileName,"modalo_%d_%s_%04d%02d%02dT%02d%02d%02dz.csv",
+      device->plantCode,      // plant code
+      device->assetID,        // asset ID
+      UTCTimeS->tm_year+1900, // The number of years since 1900
+      UTCTimeS->tm_mon+1,     // month, range 0 to 11
+      UTCTimeS->tm_mday,      // day of the month, range 1 to 31
+      UTCTimeS->tm_hour,      // hours, range 0 to 23
+      UTCTimeS->tm_min,       // minutes, range 0 to 59
+      UTCTimeS->tm_sec);      //update the ISO 8601 time strings
+    printf("Log File: %s%s\n",config.logFilePath,device->logFileName);
+  }
+
+  MAP map;
+  map = config.device[0].map; //temporary fix, should be removed after multiple read success
+
   seconds = 0; // reset seconds to enter loop without delay
-
   do{
     while(time(NULL)==seconds)  // if time did not increment
       Sleep(MODALO_SLEEP_MORE);      // wait a bit extra until next second
@@ -125,27 +132,31 @@ int main(int argc, char *argv[])
     if(localTimeS->tm_sec == 0) { // 1 minute timer
       
       if((localTimeS->tm_min+(localTimeS->tm_hour*60)-config.startLog)%config.fileInterval == 0) { //file interval starts
-        sprintf(logFileName,"modalo_%d_%s_%04d%02d%02dT%02d%02d%02dz.csv",
-          config.device[0].plantCode, // plant code
-          config.device[0].assetID,   // asset ID
-          UTCTimeS->tm_year+1900, // The number of years since 1900
-          UTCTimeS->tm_mon+1,     // month, range 0 to 11
-          UTCTimeS->tm_mday,      // day of the month, range 1 to 31
-          UTCTimeS->tm_hour,      // hours, range 0 to 23
-          UTCTimeS->tm_min,       // minutes, range 0 to 59
-          UTCTimeS->tm_sec);      //update the ISO 8601 time strings
+        _MODALO_forEachDevice(device,config) { // MACRO to loop over each device in config structure
+          if(device->slaveID == 0) continue;   // skip over empty device declarations
 
-        printf("\nNew File: %s\n",logFileName);
+          // update log file name for each device
+          sprintf(device->logFileName,"modalo_%d_%s_%04d%02d%02dT%02d%02d%02dz.csv",
+            device->plantCode,      // plant code
+            device->assetID,        // asset ID
+            UTCTimeS->tm_year+1900, // The number of years since 1900
+            UTCTimeS->tm_mon+1,     // month, range 0 to 11
+            UTCTimeS->tm_mday,      // day of the month, range 1 to 31
+            UTCTimeS->tm_hour,      // hours, range 0 to 23
+            UTCTimeS->tm_min,       // minutes, range 0 to 59
+            UTCTimeS->tm_sec);      //update the ISO 8601 time strings
+          printf("\n\nNew Log File: %s%s\n",config.logFilePath,device->logFileName);
+        }
       } // file interval ends.
     } // 1 minute timer ends
 
     if(seconds%config.pollInterval == 0) { //poll interval starts
-      if(!readReg(ctx,&map.reg[map.regIndex])) modaloPrintLastError();
-      if(++map.regIndex==map.mapSize) map.regIndex=0; // reset index
+      if(map.regIndex>=map.mapSize) map.regIndex=0; // reset index
+      if(!readReg(ctx,&map.reg[map.regIndex++])) modaloPrintLastError();
     } // poll interval ends.
 
     if(seconds%config.sampleInterval == 0) { //sample interval starts
-      if(!writeLogFile(logFileName,config.logFilePath,map,UTCTimeS)) {
+      if(!writeLogFile(config.device[0].logFileName,config.logFilePath,map,UTCTimeS)) {
         modaloPrintLastError();
       }
     } // sample interval ends.
@@ -158,7 +169,6 @@ int main(int argc, char *argv[])
   modbus_free(ctx);
   freeMAP(map);
   return 0;
-
 }
 
 modbus_t* initialiseModbus(CONFIG * config)
@@ -254,7 +264,7 @@ int writeLogFile(char* logFileName,char* logFilePath,MAP map,struct tm *UTCTimeS
   FILE* logFileHandle=NULL;  // Handle for holding log file
   int count=0; // for counting the no. of registers written
   int fResult = 0; // for error checking fprintf
-  char fullFileString [2*FILEPATHSIZE] = "";
+  char fullFileString [FILENAMESIZE+FILEPATHSIZE] = "";
 
   sprintf(fullFileString,"%s%s",logFilePath,logFileName);
   logFileHandle = fopen(fullFileString,"a"); // open log file in append mode
