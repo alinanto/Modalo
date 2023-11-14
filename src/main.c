@@ -75,16 +75,6 @@ int main(int argc, char *argv[])
   }
   printModaloConfig(config);
 
-  // initialise modbus  
-  printf("\nInitialsing modbus connection.\n");
-  ctx=initialiseModbus(&config);
-	if(ctx==NULL) //modbus failed to initialise
-  {
-    modaloPrintLastError();
-    return -1;
-  }
-
-  //modbus initialised successfully
   seconds=time(NULL); // update time
   localTimeS = localtime(&seconds); // update time structure with local time
   UTCTimeS = gmtime(&seconds); //update time structure with UTC Time
@@ -100,8 +90,6 @@ int main(int argc, char *argv[])
       modaloPrintLastError();
       return -1;
     }
-    printf("\nDevice %d mapping table\n",config.devIndex);
-    printModaloMap(device->map); // print mapping after success
 
     // update log file name for each device first use
     sprintf(device->logFileName,"modalo_%d_%s_%04d%02d%02dT%02d%02d%02dz.csv",
@@ -113,7 +101,16 @@ int main(int argc, char *argv[])
       UTCTimeS->tm_hour,      // hours, range 0 to 23
       UTCTimeS->tm_min,       // minutes, range 0 to 59
       UTCTimeS->tm_sec);      //update the ISO 8601 time strings
-    printf("Log File: %s%s\n",config.logFilePath,device->logFileName);
+  }
+  printModaloMap(config);
+
+  // initialise modbus  
+  printf("\nInitialsing modbus connection.\n");
+  ctx=initialiseModbus(&config);
+	if(ctx==NULL) //modbus failed to initialise
+  {
+    modaloPrintLastError();
+    return -1;
   }
 
   MAP map;

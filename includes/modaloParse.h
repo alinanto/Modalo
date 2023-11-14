@@ -100,17 +100,17 @@ typedef struct CONFIG{
 //macro definitions
 
 // loop for each device a in config struct b
-#define _MODALO_forEachDevice(a,b) b.devIndex=0;for(DEVICE* a=b.device;b.devIndex<MAX_MODBUS_DEVICES;b.devIndex++,a=&b.device[b.devIndex])
+#define _MODALO_forEachDevice(a,b) (b).devIndex=0;for(DEVICE* a=(b).device;(b).devIndex<MAX_MODBUS_DEVICES;(b).devIndex++,a=&(b).device[(b).devIndex])
 
 //loop for each register a in map struct b
-#define _MODALO_forEachReg(a,b) b.regIndex=0;for(REG* a=b.reg;b.regIndex<b.mapSize;b.regIndex++,a=&b.reg[b.regIndex])
+#define _MODALO_forEachReg(a,b) (b).regIndex=0;for(REG* a=(b).reg;(b).regIndex<(b).mapSize;(b).regIndex++,a=&(b).reg[(b).regIndex])
 
 //API functions
 MODALO_API int MODALO_CALL parseModaloConfigFile(CONFIG* config, char * FileName);
 MODALO_API void MODALO_CALL freeMAP(MAP map);
 MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName); // if u use this function, then u should free the memory using freeMAP()
 MODALO_API void MODALO_CALL printModaloConfig(CONFIG config);
-MODALO_API void MODALO_CALL printModaloMap(MAP map);
+MODALO_API void MODALO_CALL printModaloMap(CONFIG config);
 
 // non API functions (not accessible by including header and linking library)
 int validateModaloToken(CONFIG *config, char *parameter, char *value); // validates and saves parameter and value
@@ -122,6 +122,7 @@ void cleanModaloConfigStruct(CONFIG *config);
 int validateModaloCOMPORTString(char* value);
 int validateModaloHHMMString(char* value);
 int validateModaloFilePathString(char* value);
+void printOnly(char* string, size_t len);
 
 #ifdef __cplusplus
 }

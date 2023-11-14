@@ -26,10 +26,31 @@
 
 
 
-
-  "RPI-UNUSED" : [
+  "RPI-M20" : [
     {
-      "regName": "DCPower",
+      "regName": "PowerGenerationAC_(W)",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 49152,
+      "regSizeU16": 1,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2048,
+      "regSizeU16": 2,
+      "multiplier": 10,
+      "divisor" : 1000,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "DCPower_(W)",
       "byteReversed": false,
       "bitReversed": false,
       "functionCode": 4,
@@ -40,69 +61,69 @@
       "movingAvgFilter": true
     },
     {
-      "regName": "TotalEnergy",
+      "regName": "TotalEnergy_KWh",
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,
-      "regAddress": 1076,
+      "regAddress": 53252,
       "regSizeU16": 2,
       "multiplier": 10,
-      "divisor" : 1,
+      "divisor" : 1000,
       "movingAvgFilter": false
     },
     {
-      "regName": "EnergyThisMonth",
+      "regName": "EnergyThisMonth_(KWh)",
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,
       "regAddress": 2112,
       "regSizeU16": 2,
       "multiplier": 10,
-      "divisor" : 1,
+      "divisor" : 1000,
       "movingAvgFilter": false
     },
     {
-      "regName": "EnergyLastMonth",
+      "regName": "EnergyLastMonth_(KWh)",
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,
       "regAddress": 2114,
       "regSizeU16": 2,
       "multiplier": 10,
-      "divisor" : 1,
+      "divisor" : 1000,
       "movingAvgFilter": false
     },
     {
-      "regName": "EnergyLastDay",
+      "regName": "EnergyLastDay_(KWh)",
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,
       "regAddress": 2050,
       "regSizeU16": 2,
       "multiplier": 10,
-      "divisor" : 1,
+      "divisor" : 1000,
       "movingAvgFilter": false
     },
     {
-      "regName": "EnergyThisYear",
+      "regName": "EnergyThisYear_(KWh)",
       "regSizeU16": 2,
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,
       "multiplier": 10,
       "regAddress": 2096,
-      "divisor" : 1,
+      "divisor" : 1000,
       "movingAvgFilter": false
     },
     {
-      "regName": "EnergyLastYear",
+      "regName": "EnergyLastYear_(KWh)",
       "regSizeU16": 2,
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,
       "multiplier": 10,
       "regAddress": 2098,
-      "divisor" : 1,
+      "divisor" : 1000,
       "movingAvgFilter": false
     }
   ]

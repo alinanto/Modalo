@@ -402,30 +402,88 @@ MODALO_API void MODALO_CALL printModaloConfig(CONFIG config) {
   printf("\n");
 }
 
+// to print a fixed length of any given string (by default aligns to center)
+void printOnly(char* inStr, size_t outLen) {
+  const size_t inLen = strlen(inStr); // get length of input string
+  if (outLen<=0) return; // invalid outLen parameter
+  char* outStr = (char*) malloc(sizeof(char)*(outLen+1)); // allocate memory for outLen
+  if(outStr == NULL) return; // memory allocation error
+  
+  //case 1 input less than output
+  if(inLen<outLen) {
+    const size_t leftMargin = (outLen-inLen)/2;
+    for(int i=0;i<leftMargin;i++) outStr[i] = ' '; // put spaces from 0 to left Margin
+    strcpy(outStr+leftMargin,inStr); // copy the inStr as is starting from leftMargin
+    for(int i=leftMargin+inLen;i<outLen;i++) outStr[i] = ' '; // put spaces upto outLen
+  }
+
+  //case 2 output less than input
+  if(outLen<inLen) {
+    strncpy(outStr,inStr,outLen); // copy the inStr as is limited to outLen characters
+    outStr[outLen-1] = '.'; 
+    outStr[outLen-2] = '.';
+  }
+
+  //case 3 output and input equal
+  if(outLen==inLen) strcpy(outStr,inStr); // copy the inStr as is
+
+  outStr[outLen] = '\0'; // put last memory as null character
+  printf("%s|",outStr);
+  free(outStr);
+}
+
 // to print mapping of modalo map structure
-MODALO_API void MODALO_CALL printModaloMap(MAP map) {
-  _MODALO_forEachReg(reg,map) {
-    printf("\nReg Name: %s\n",reg->regName);
-    printf("Reg Add: %d\n",reg->regAddress);
-    printf("Reg SizeU16: %d\n",reg->regSizeU16);
-    printf("Byte Reverse: %d\n",reg->byteReversed);
-    printf("Bit Reverse: %d\n",reg->bitReversed);
-    printf("Function Code: %d\n",reg->functionCode);
-    printf("Multiplier:  %d\n",reg->multiplier);
-    printf("Divisor: %d\n",reg->divisor);
-    printf("Moving Avg Filter: %d\n",reg->movingAvgFilter);
-  } /*
-  for(map.regIndex=0;map.regIndex<map.mapSize;map.regIndex++) {
-    printf("\nReg Name: %s\n",map.reg[map.regIndex].regName);
-    printf("Reg Add: %d\n",map.reg[map.regIndex].regAddress);
-    printf("Reg SizeU16: %d\n",map.reg[map.regIndex].regSizeU16);
-    printf("Byte Reverse: %d\n",map.reg[map.regIndex].byteReversed);
-    printf("Bit Reverse: %d\n",map.reg[map.regIndex].bitReversed);
-    printf("Function Code: %d\n",map.reg[map.regIndex].functionCode);
-    printf("Multiplier:  %d\n",map.reg[map.regIndex].multiplier);
-    printf("Divisor: %d\n",map.reg[map.regIndex].divisor);
-    printf("Moving Avg Filter: %d\n",map.reg[map.regIndex].movingAvgFilter);
-  } */
+MODALO_API void MODALO_CALL printModaloMap(CONFIG config) {
+  char buffer[20] = "";
+  const unsigned int col[] = {3,5,25,6,5,5,6,4,4,4};
+  unsigned int lineLen = 1;
+  for(int i=0;i<10;i++) lineLen += col[i]+1;
+  
+  printf("\n");
+  for(int i=0;i<lineLen;i++) printf("_");
+  printf("\n|");
+  printOnly("MODBUS MAP TABLE",lineLen-2);
+  printf("\n|");
+  for(int i=0;i<lineLen-2;i++) printf("-");
+  printf("|\n|");
+  printOnly("DV#",col[0]);
+  printOnly("SL_ID",col[1]);
+  printOnly("REG",col[2]);
+  printOnly("SZ_U16",col[3]);
+  printOnly("B_REV",col[4]);
+  printOnly("b_REV",col[5]);
+  printOnly("F_CODE",col[6]);
+  printOnly("MULT",col[7]);
+  printOnly("DIV",col[8]);
+  printOnly("FLTR",col[9]);
+  printf("\n|");
+  
+  for(int i=0;i<10;i++) {
+    for(int j=0;j<col[i];j++)
+      printf("-");
+    printf("|");
+  }
+  printf("\n");
+
+  _MODALO_forEachDevice(device,config) { //loop through all devices
+    _MODALO_forEachReg(reg,device->map) { //loop through all registers in dev map
+      printf("|");
+      sprintf(buffer,"%d",config.devIndex+1); printOnly(buffer,col[0]);
+      sprintf(buffer,"%d",device->slaveID); printOnly(buffer,col[1]);
+      sprintf(buffer,"%s",reg->regName); printOnly(buffer,col[2]);
+      sprintf(buffer,"%d",reg->regSizeU16); printOnly(buffer,col[3]);
+      sprintf(buffer,"%d",reg->byteReversed); printOnly(buffer,col[4]);
+      sprintf(buffer,"%d",reg->bitReversed); printOnly(buffer,col[5]);
+      sprintf(buffer,"%d",reg->functionCode); printOnly(buffer,col[6]);
+      sprintf(buffer,"%d",reg->multiplier); printOnly(buffer,col[7]);
+      sprintf(buffer,"%d",reg->divisor); printOnly(buffer,col[8]);
+      sprintf(buffer,"%d",reg->movingAvgFilter); printOnly(buffer,col[9]);
+      printf("\n");
+    }  
+  }
+  printf("|");
+  for(int i=0;i<lineLen-2;i++) printf("_");
+  printf("|\n");
 }
 
 // parses and entire file to buffer and then returns pointer : Memory to be made free after use. 
