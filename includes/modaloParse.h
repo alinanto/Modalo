@@ -107,7 +107,7 @@ typedef struct CONFIG{
 
 //API functions
 MODALO_API int MODALO_CALL parseModaloConfigFile(CONFIG* config, char * FileName);
-MODALO_API void MODALO_CALL freeMAP(MAP map);
+MODALO_API void MODALO_CALL freeMAP(CONFIG config);
 MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName); // if u use this function, then u should free the memory using freeMAP()
 MODALO_API void MODALO_CALL printModaloConfig(CONFIG config);
 MODALO_API void MODALO_CALL printModaloMap(CONFIG config);

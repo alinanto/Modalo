@@ -66,6 +66,8 @@ int main(int argc, char *argv[])
   modbus_t *ctx=NULL; // modbus context pointer
   char mapFileName [MAXNAMESIZE+20] = "../config/SOLIS.json";
   
+  // setbuf(stdout,NULL); // set std out to unbuffered
+
   // parse the configuration file
   printf("Parsing configuration File: %s\n",CONFIGFILE);
   if(!parseModaloConfigFile(&config,CONFIGFILE)) // parse failed
@@ -88,6 +90,8 @@ int main(int argc, char *argv[])
     device->map = parseModaloJSONFile(mapFileName,device->model); // get map from JSON file
     if(device->map.reg == NULL){ // handle error
       modaloPrintLastError();
+      freeMAP(config);
+      system("pause");
       return -1;
     }
 
@@ -102,7 +106,6 @@ int main(int argc, char *argv[])
       UTCTimeS->tm_min,       // minutes, range 0 to 59
       UTCTimeS->tm_sec);      //update the ISO 8601 time strings
   }
-  printModaloMap(config);
 
   // initialise modbus  
   printf("\nInitialsing modbus connection.\n");
@@ -110,6 +113,8 @@ int main(int argc, char *argv[])
 	if(ctx==NULL) //modbus failed to initialise
   {
     modaloPrintLastError();
+    freeMAP(config);
+    system("pause");
     return -1;
   }
 
@@ -148,8 +153,12 @@ int main(int argc, char *argv[])
     } // 1 minute timer ends
 
     if(seconds%config.pollInterval == 0) { //poll interval starts
-      if(map.regIndex>=map.mapSize) map.regIndex=0; // reset index
-      if(!readReg(ctx,&map.reg[map.regIndex++])) modaloPrintLastError();
+      if(map.regIndex>=map.mapSize) map.regIndex=0; // index overflow => reset index
+      if(!readReg(ctx,&map.reg[map.regIndex++])) modaloPrintLastError(); // read reg error
+      else { // read success
+        system("cls");  // clear screen
+        printModaloMap(config); //print map
+      }
     } // poll interval ends.
 
     if(seconds%config.sampleInterval == 0) { //sample interval starts
@@ -164,7 +173,7 @@ int main(int argc, char *argv[])
   // lose the connection and free MAP
   modbus_close(ctx);
   modbus_free(ctx);
-  freeMAP(map);
+  freeMAP(config);
   return 0;
 }
 
@@ -219,7 +228,7 @@ int readReg(modbus_t* ctx, REG* reg)
   if(reg->functionCode==4) mResult = modbus_read_input_registers(ctx,reg->regAddress,reg->regSizeU16,reg->valueU16);
 
   if(mResult != reg->regSizeU16)	{ // error reading register
-  	sprintf(error, "Reading registers failed with CODE: %s",modbus_strerror(errno));
+  	sprintf(error, "Reading register %s failed with CODE: %s",reg->regName,modbus_strerror(errno));
   	modbus_flush(ctx);
     modaloSetLastError(EMODBUS_READ,error);
   	return 0;
@@ -236,24 +245,12 @@ int readReg(modbus_t* ctx, REG* reg)
     reg->valueU16[1] = reverseBits(reg->valueU16[1]);
   }
 
-  if(reg->regSizeU16 == 2) { // U32
+  if(reg->regSizeU16 == 2) // U32
     reg->value = (float)((reg->valueU16[0]*65536 + reg->valueU16[1]) * reg->multiplier)/ reg->divisor;
-    printf("\rREGNAME:%s, RAWVALUE:0x%04X%04X, VALUE:%0.2f                      ",
-      reg->regName,
-      reg->valueU16[0],
-      reg->valueU16[1],
-      reg->value);
-    fflush(stdout);
-    return 1;
-  }
-  // U16
-  reg->value = (float)(reg->valueU16[0] * reg->multiplier)/ reg->divisor;
-  printf("\rREGNAME:%s, RAWVALUE:0x%04X, VALUE:%0.2f                            ",
-    reg->regName,
-    reg->valueU16[0],
-    reg->value);
-	fflush(stdout);
-  return 1;
+  else // U16
+    reg->value = (float)(reg->valueU16[0] * reg->multiplier)/ reg->divisor;
+
+  return 1; // read success
 }
 
 int writeLogFile(char* logFileName,char* logFilePath,MAP map,struct tm *UTCTimeS)

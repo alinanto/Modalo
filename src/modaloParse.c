@@ -435,11 +435,11 @@ void printOnly(char* inStr, size_t outLen) {
 // to print mapping of modalo map structure
 MODALO_API void MODALO_CALL printModaloMap(CONFIG config) {
   char buffer[20] = "";
-  const unsigned int col[] = {3,5,25,6,5,5,6,4,4,4};
+  const unsigned int col[] = {3,5,25,6,5,5,6,4,4,4,10,12};
+  const unsigned int n_col = 12; 
   unsigned int lineLen = 1;
-  for(int i=0;i<10;i++) lineLen += col[i]+1;
+  for(int i=0;i<n_col;i++) lineLen += col[i]+1;
   
-  printf("\n");
   for(int i=0;i<lineLen;i++) printf("_");
   printf("\n|");
   printOnly("MODBUS MAP TABLE",lineLen-2);
@@ -456,9 +456,11 @@ MODALO_API void MODALO_CALL printModaloMap(CONFIG config) {
   printOnly("MULT",col[7]);
   printOnly("DIV",col[8]);
   printOnly("FLTR",col[9]);
+  printOnly("RAW_VAL",col[10]);
+  printOnly("VALUE",col[11]);
   printf("\n|");
   
-  for(int i=0;i<10;i++) {
+  for(int i=0;i<n_col;i++) {
     for(int j=0;j<col[i];j++)
       printf("-");
     printf("|");
@@ -478,12 +480,23 @@ MODALO_API void MODALO_CALL printModaloMap(CONFIG config) {
       sprintf(buffer,"%d",reg->multiplier); printOnly(buffer,col[7]);
       sprintf(buffer,"%d",reg->divisor); printOnly(buffer,col[8]);
       sprintf(buffer,"%d",reg->movingAvgFilter); printOnly(buffer,col[9]);
+
+      if(reg->regSizeU16 == 2) sprintf(buffer,"0x%04X%04X",reg->valueU16[0],reg->valueU16[1]);
+      else sprintf(buffer,"0x%08X",reg->valueU16[0]);
+      printOnly(buffer,col[10]);
+
+      sprintf(buffer,"%0.2f",reg->value); printOnly(buffer,col[11]);
       printf("\n");
     }  
   }
   printf("|");
-  for(int i=0;i<lineLen-2;i++) printf("_");
-  printf("|\n");
+  for(int i=0;i<n_col;i++) {
+    for(int j=0;j<col[i];j++)
+      printf("_");
+    printf("|");
+  }
+  printf("\n");
+  fflush(stdout);
 }
 
 // parses and entire file to buffer and then returns pointer : Memory to be made free after use. 
@@ -557,9 +570,12 @@ char* readFileToBuffer(char * fileName)
 }
 
 // To free MAP allocated by JSON Parser
-MODALO_API void MODALO_CALL freeMAP(MAP map)
+MODALO_API void MODALO_CALL freeMAP(CONFIG config)
 {
-  free(map.reg);
+  _MODALO_forEachDevice(device,config) { // MACRO to loop over each device in config structure
+    if(device->slaveID == 0) continue;   // skip over empty device declarations
+    free(device->map.reg);               // free all maps
+  }
 }
 
 // API function to parse JSON. After use u should free the memory using freeMAP()

@@ -14,4 +14,4 @@ cls
 gcc -L bin/ -I includes/ -o bin/libparse-modalo.dll -s -shared src/modaloParse.c -lcJSON -lerror-modalo -D CJSON_IMPORT_SYMBOLS -D MODALO_EXPORT
 
 :: combiling main application modalo - always recombile
-:: gcc -L bin/ -I includes/ -o bin/Modalo.exe -w -s src/main.c -lmodbus -lparse-modalo -lerror-modalo
+gcc -L bin/ -I includes/ -o bin/Modalo.exe -w -s src/main.c -lmodbus -lparse-modalo -lerror-modalo
