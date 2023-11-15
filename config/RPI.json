@@ -1,37 +1,11 @@
 {
-  "RPI": [
-    {
-      "regName": "PowerGeneration_(W)",
-      "byteReversed": false,
-      "bitReversed": false,
-      "functionCode": 4,
-      "regAddress": 49152,
-      "regSizeU16": 1,
-      "multiplier": 1,
-      "divisor" : 1,
-      "movingAvgFilter": true
-    },
-    {
-      "regName": "TodaysGeneration_(kWh)",
-      "byteReversed": true,
-      "bitReversed": false,
-      "functionCode": 4,
-      "regAddress": 2048,
-      "regSizeU16": 2,
-      "multiplier": 10,
-      "divisor" : 1,
-      "movingAvgFilter": false
-    }
-  ],
-
-
-  "RPI-M20" : [
+  "RPI-M6A": [
     {
       "regName": "PowerGenerationAC_(W)",
       "byteReversed": false,
       "bitReversed": false,
       "functionCode": 4,
-      "regAddress": 49152,
+      "regAddress": 49151,
       "regSizeU16": 1,
       "multiplier": 1,
       "divisor" : 1,
@@ -42,9 +16,234 @@
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,
-      "regAddress": 2048,
+      "regAddress": 2047,
       "regSizeU16": 2,
-      "multiplier": 10,
+      "multiplier": 1,
+      "divisor" : 1000,
+      "movingAvgFilter": false
+    }
+  ],
+  
+  "RPI-M8A": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 49151,
+      "regSizeU16": 1,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2047,
+      "regSizeU16": 2,
+      "multiplier": 1,
+      "divisor" : 1000,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "RPI-M10A": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 49151,
+      "regSizeU16": 1,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2047,
+      "regSizeU16": 2,
+      "multiplier": 1,
+      "divisor" : 1000,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "RPI-M15A": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 49151,
+      "regSizeU16": 1,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2047,
+      "regSizeU16": 2,
+      "multiplier": 1,
+      "divisor" : 1000,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "RPI-M20A": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 49151,
+      "regSizeU16": 1,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2047,
+      "regSizeU16": 2,
+      "multiplier": 1,
+      "divisor" : 1000,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "RPI-M30A": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 49151,
+      "regSizeU16": 1,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2047,
+      "regSizeU16": 2,
+      "multiplier": 1,
+      "divisor" : 1000,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "RPI-M50A": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 49151,
+      "regSizeU16": 1,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2047,
+      "regSizeU16": 2,
+      "multiplier": 1,
+      "divisor" : 1000,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "RPI-M66H": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 49151,
+      "regSizeU16": 1,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2047,
+      "regSizeU16": 2,
+      "multiplier": 1,
+      "divisor" : 1000,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "RPI-M88H": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 49151,
+      "regSizeU16": 1,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2047,
+      "regSizeU16": 2,
+      "multiplier": 1,
+      "divisor" : 1000,
+      "movingAvgFilter": false
+    }
+  ],
+  
+  "RPI-UNUSED" : [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 49151,
+      "regSizeU16": 1,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 4,
+      "regAddress": 2047,
+      "regSizeU16": 2,
+      "multiplier": 1,
       "divisor" : 1000,
       "movingAvgFilter": false
     },
@@ -53,7 +252,7 @@
       "byteReversed": false,
       "bitReversed": false,
       "functionCode": 4,
-      "regAddress": 45056,
+      "regAddress": 45055,
       "regSizeU16": 1,
       "multiplier": 1,
       "divisor" : 1,
@@ -64,9 +263,9 @@
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,
-      "regAddress": 53252,
+      "regAddress": 53251,
       "regSizeU16": 2,
-      "multiplier": 10,
+      "multiplier": 1,
       "divisor" : 1000,
       "movingAvgFilter": false
     },
@@ -75,9 +274,9 @@
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,
-      "regAddress": 2112,
+      "regAddress": 2111,
       "regSizeU16": 2,
-      "multiplier": 10,
+      "multiplier": 1,
       "divisor" : 1000,
       "movingAvgFilter": false
     },
@@ -86,9 +285,9 @@
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,
-      "regAddress": 2114,
+      "regAddress": 2113,
       "regSizeU16": 2,
-      "multiplier": 10,
+      "multiplier": 1,
       "divisor" : 1000,
       "movingAvgFilter": false
     },
@@ -97,9 +296,9 @@
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,
-      "regAddress": 2050,
+      "regAddress": 2049,
       "regSizeU16": 2,
-      "multiplier": 10,
+      "multiplier": 1,
       "divisor" : 1000,
       "movingAvgFilter": false
     },
@@ -109,8 +308,8 @@
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,
-      "multiplier": 10,
-      "regAddress": 2096,
+      "multiplier": 1,
+      "regAddress": 2095,
       "divisor" : 1000,
       "movingAvgFilter": false
     },
@@ -120,8 +319,8 @@
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,
-      "multiplier": 10,
-      "regAddress": 2098,
+      "multiplier": 1,
+      "regAddress": 2097,
       "divisor" : 1000,
       "movingAvgFilter": false
     }

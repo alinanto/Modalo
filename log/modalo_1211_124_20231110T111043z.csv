@@ -1,5 +1,0 @@
-Time_Stamp_(ISO8601), PowerGenerationAC_(W), TodaysGeneration_(kWh), PowerGenerationDC_(W), TotalEnergy_(kWh), EnergyThisMonth_(kWh), EnergyLastMonth_(kWh), EnergyLastDay_(kWh), EnergyThisYear_(kWh), EnergyLastYear_(kWh)
-2023-11-10T11:11:00z, 2050.00, 64.70, 2174.00, 79198.00, 0.00, 0.00, 0.00, 0.00, 0.00
-2023-11-10T11:12:00z, 2050.00, 64.70, 2165.00, 79198.00, 615.00, 2188.00, 45.70, 22982.00, 26782.00
-2023-11-10T11:13:00z, 2010.00, 64.70, 2123.00, 79198.00, 615.00, 2188.00, 45.70, 22982.00, 26782.00
-2023-11-10T11:14:00z, 1960.00, 64.80, 2050.00, 79198.00, 615.00, 2188.00, 45.70, 22982.00, 26782.00

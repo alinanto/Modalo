@@ -1,7 +1,7 @@
 {
-  "SOLIS-15K": [
+  "SOLIS-12K": [
     {
-      "regName": "PowerGeneration_(W)",
+      "regName": "PowerGenerationAC_(W)",
       "regAddress": 3004,
       "regSizeU16": 2,
       "byteReversed": false,
@@ -24,7 +24,255 @@
     }
   ],
 
+  "SOLIS-15K": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 3004,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "regAddress": 3014,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": false
+    }
+  ],
 
+  "SOLIS-17K": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 3004,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "regAddress": 3014,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "SOLIS-20K": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 3004,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "regAddress": 3014,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "SOLIS-25K": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 3004,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "regAddress": 3014,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "SOLIS-30K": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 3004,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "regAddress": 3014,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "SOLIS-33K": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 3004,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "regAddress": 3014,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "SOLIS-36K": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 3004,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "regAddress": 3014,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "SOLIS-40K": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 3004,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "regAddress": 3014,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "SOLIS-50K": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 3004,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "regAddress": 3014,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "SOLIS-60K": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 3004,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "regAddress": 3014,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": false
+    }
+  ],
 
   "SOLIS-UNUSED" : [
     {
