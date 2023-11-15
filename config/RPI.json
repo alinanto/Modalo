@@ -309,7 +309,7 @@
       "bitReversed": false,
       "functionCode": 4,
       "multiplier": 1,
-      "regAddress": 2095,
+      "regAddress": 2495,
       "divisor" : 1000,
       "movingAvgFilter": false
     },
@@ -320,7 +320,7 @@
       "bitReversed": false,
       "functionCode": 4,
       "multiplier": 1,
-      "regAddress": 2097,
+      "regAddress": 2497,
       "divisor" : 1000,
       "movingAvgFilter": false
     }
