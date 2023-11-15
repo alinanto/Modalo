@@ -25,7 +25,6 @@
   ],
 
 
-
   "RPI-M20" : [
     {
       "regName": "PowerGenerationAC_(W)",
@@ -50,7 +49,7 @@
       "movingAvgFilter": false
     },
     {
-      "regName": "DCPower_(W)",
+      "regName": "PowerGenerationDC_(W)",
       "byteReversed": false,
       "bitReversed": false,
       "functionCode": 4,
@@ -61,7 +60,7 @@
       "movingAvgFilter": true
     },
     {
-      "regName": "TotalEnergy_KWh",
+      "regName": "TotalEnergy_(KWh)",
       "byteReversed": true,
       "bitReversed": false,
       "functionCode": 4,

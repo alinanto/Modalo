@@ -52,7 +52,7 @@ typedef struct REG {
   uint16_t divisor;
   uint16_t movingAvgFilter;
   uint16_t valueU16[2];
-  float value;
+  double value;
 }REG;
 
 // structure definitions for holding map information

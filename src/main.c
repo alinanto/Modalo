@@ -246,9 +246,9 @@ int readReg(modbus_t* ctx, REG* reg)
   }
 
   if(reg->regSizeU16 == 2) // U32
-    reg->value = (float)((reg->valueU16[0]*65536 + reg->valueU16[1]) * reg->multiplier)/ reg->divisor;
+    reg->value = (((double)reg->valueU16[0]*65536 + (double)reg->valueU16[1]) * (double)reg->multiplier) / (double)reg->divisor;
   else // U16
-    reg->value = (float)(reg->valueU16[0] * reg->multiplier)/ reg->divisor;
+    reg->value = ((double)reg->valueU16[0] * (double)reg->multiplier)/ (double)reg->divisor;
 
   return 1; // read success
 }
