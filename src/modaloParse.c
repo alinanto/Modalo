@@ -612,6 +612,13 @@ MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName)
 
   // starting map assignement
   map.mapSize = cJSON_GetArraySize(model); // size of map
+  if(map.mapSize==0) { // empty array => no register entries
+    modaloSetLastError(EPARSE_CJSON_STRING,"Did not find any valid registers.");
+    free(file);
+    cJSON_Delete(root);
+    map.reg=NULL;
+    return map;
+  }
   map.reg = (REG*) calloc(map.mapSize,sizeof(REG)); // dynamically allocate memory for map
   if(map.reg == NULL) { //error allocation memory for map
     modaloSetLastError(EPARSE_CJSON_STRING,"Unable to allocate memory for map.");

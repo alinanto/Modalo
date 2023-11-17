@@ -47,8 +47,11 @@ No part/piece may be reused without explicit permission of POWERGRID */
 
 // function definitions
 modbus_t* initialiseModbus(CONFIG * config);
+int pollNextReg(CONFIG* config, modbus_t* ctx);
+void updateLogFileName(CONFIG* config,struct tm *UTCTimeS);
 int readReg(modbus_t* ctx, REG* reg);
-int writeLogFile(char* logFileName,char* logFilePath,MAP map,struct tm *UTCTimeS);
+int writeLogFile(DEVICE* device,char* logFilePath,struct tm *UTCTimeS);
+int modbusDataLog(CONFIG* config,struct tm* UTCTimeS);
 uint16_t reverseBits(uint16_t num);
 
 //main function
@@ -77,14 +80,9 @@ int main(int argc, char *argv[])
   }
   printModaloConfig(config);
 
-  seconds=time(NULL); // update time
-  localTimeS = localtime(&seconds); // update time structure with local time
-  UTCTimeS = gmtime(&seconds); //update time structure with UTC Time
-
+  // starting to read map files and save to device configuration structure
   _MODALO_forEachDevice(device,config) { // MACRO to loop over each device in config structure
     if(device->slaveID == 0) continue;   // skip over empty device declarations
-
-    // starting to read map files and save to device configuration structure
     sprintf(mapFileName,"../config/%s.json",device->make);
     printf("Parsing json file for reg map: %s\n",mapFileName);
     device->map = parseModaloJSONFile(mapFileName,device->model); // get map from JSON file
@@ -94,17 +92,6 @@ int main(int argc, char *argv[])
       system("pause");
       return -1;
     }
-
-    // update log file name for each device first use
-    sprintf(device->logFileName,"modalo_%d_%s_%04d%02d%02dT%02d%02d%02dz.csv",
-      device->plantCode,      // plant code
-      device->assetID,        // asset ID
-      UTCTimeS->tm_year+1900, // The number of years since 1900
-      UTCTimeS->tm_mon+1,     // month, range 0 to 11
-      UTCTimeS->tm_mday,      // day of the month, range 1 to 31
-      UTCTimeS->tm_hour,      // hours, range 0 to 23
-      UTCTimeS->tm_min,       // minutes, range 0 to 59
-      UTCTimeS->tm_sec);      //update the ISO 8601 time strings
   }
 
   // initialise modbus  
@@ -118,9 +105,10 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  MAP map;
-  map = config.device[0].map; //temporary fix, should be removed after multiple read success
-
+  seconds=time(NULL); // update time
+  localTimeS = localtime(&seconds); // update time structure with local time
+  UTCTimeS = gmtime(&seconds); //update time structure with UTC Time
+  updateLogFileName(&config,UTCTimeS); // initialse logFilename for all devices
   seconds = 0; // reset seconds to enter loop without delay
   do{
     while(time(NULL)==seconds)  // if time did not increment
@@ -134,27 +122,14 @@ int main(int argc, char *argv[])
     if(localTimeS->tm_sec == 0) { // 1 minute timer
       
       if((localTimeS->tm_min+(localTimeS->tm_hour*60)-config.startLog)%config.fileInterval == 0) { //file interval starts
-        _MODALO_forEachDevice(device,config) { // MACRO to loop over each device in config structure
-          if(device->slaveID == 0) continue;   // skip over empty device declarations
 
-          // update log file name for each device
-          sprintf(device->logFileName,"modalo_%d_%s_%04d%02d%02dT%02d%02d%02dz.csv",
-            device->plantCode,      // plant code
-            device->assetID,        // asset ID
-            UTCTimeS->tm_year+1900, // The number of years since 1900
-            UTCTimeS->tm_mon+1,     // month, range 0 to 11
-            UTCTimeS->tm_mday,      // day of the month, range 1 to 31
-            UTCTimeS->tm_hour,      // hours, range 0 to 23
-            UTCTimeS->tm_min,       // minutes, range 0 to 59
-            UTCTimeS->tm_sec);      //update the ISO 8601 time strings
-          printf("\n\nNew Log File: %s%s\n",config.logFilePath,device->logFileName);
-        }
+        updateLogFileName(&config,UTCTimeS); // update logFilename for all devices
+
       } // file interval ends.
     } // 1 minute timer ends
 
-    if(seconds%config.pollInterval == 0) { //poll interval starts
-      if(map.regIndex>=map.mapSize) map.regIndex=0; // index overflow => reset index
-      if(!readReg(ctx,&map.reg[map.regIndex++])) modaloPrintLastError(); // read reg error
+    if(seconds%config.pollInterval == 0) { //poll interval starts => Poll next register
+      if(!pollNextReg(&config,ctx)) modaloPrintLastError(); // read reg error
       else { // read success
         system("cls");  // clear screen
         printModaloMap(config); //print map
@@ -162,7 +137,7 @@ int main(int argc, char *argv[])
     } // poll interval ends.
 
     if(seconds%config.sampleInterval == 0) { //sample interval starts
-      if(!writeLogFile(config.device[0].logFileName,config.logFilePath,map,UTCTimeS)) {
+      if(!modbusDataLog(&config,UTCTimeS)) {
         modaloPrintLastError();
       }
     } // sample interval ends.
@@ -177,12 +152,18 @@ int main(int argc, char *argv[])
   return 0;
 }
 
+// function to initalise modbus
 modbus_t* initialiseModbus(CONFIG * config)
 {
   modbus_t* ctx = NULL; // modbus context pointer
   int count=0;
   char winComPort[16] = "\\\\.\\"; //buffer to hold comport in windows format
   char error[MODALO_ERROR_MAXLENGTH]=""; //buffer to hold error
+  
+  if (config == NULL) { //NULL config
+    modaloSetLastError(EMODBUS_INIT,"Invalid / NULL Configuration.");
+    return ctx;
+	}
 
   strcat(winComPort,config->port); // converting com port to windows format
 	do{
@@ -202,24 +183,36 @@ modbus_t* initialiseModbus(CONFIG * config)
       modaloSetLastError(EMODBUS_INIT,error);
 	    modbus_free(ctx);
       ctx=NULL;
-		}
+		}/* set slave removed from initialisation for using multiple devices
     else if(modbus_set_slave(ctx, config->device[0].slaveID) == -1)
     {
-      sprintf(error,"Unable to set slave, ERROR CODE:%s",modbus_strerror(errno));
+      sprintf(error,"Unable to select slave: %s, ERROR CODE:%s",device[0].slaveID,modbus_strerror(errno));
       modaloSetLastError(EMODBUS_INIT,error);
 	    modbus_free(ctx);
       ctx=NULL;
-    }
+    }*/
     count++;
 		Sleep(MODBUS_RETRY_INTERVAL);
 	}while(ctx == NULL && count<MODBUS_MAX_RETRY); //check for failure and max retries
   return ctx;
 }
 
+// function to read the given register and update the value in the given context
 int readReg(modbus_t* ctx, REG* reg)
 {
   char error[MODALO_ERROR_MAXLENGTH] = "";
   int mResult = 0;
+
+  if(reg == NULL) { // invalid REG
+    modaloSetLastError(EMODBUS_READ,"Invalid / NULL Register");
+  	return 0;
+  }
+
+  if(ctx == NULL) { // invalid modbus context
+  	sprintf(error, "Reading register %s failed with CODE: %s",reg->regName,modbus_strerror(errno));
+    modaloSetLastError(EMODBUS_READ,error);
+  	return 0;
+  }
 
   // function code 3: Read Holding Register
   if(reg->functionCode==3) mResult = modbus_read_registers(ctx,reg->regAddress,reg->regSizeU16,reg->valueU16);
@@ -253,14 +246,16 @@ int readReg(modbus_t* ctx, REG* reg)
   return 1; // read success
 }
 
-int writeLogFile(char* logFileName,char* logFilePath,MAP map,struct tm *UTCTimeS)
-{
+// function to write to log file
+int writeLogFile(DEVICE* device,char* logFilePath,struct tm *UTCTimeS) {
   FILE* logFileHandle=NULL;  // Handle for holding log file
+  MAP map=device->map;   // map to update in file
   int count=0; // for counting the no. of registers written
   int fResult = 0; // for error checking fprintf
   char fullFileString [FILENAMESIZE+FILEPATHSIZE] = "";
 
-  sprintf(fullFileString,"%s%s",logFilePath,logFileName);
+
+  sprintf(fullFileString,"%s%s",logFilePath,device->logFileName);
   logFileHandle = fopen(fullFileString,"a"); // open log file in append mode
   if (logFileHandle == NULL) {
     modaloSetLastError(ELOG_FILE,"Unable to open log file!");
@@ -340,4 +335,73 @@ uint16_t reverseBits(uint16_t num)
     }
     reverse_num <<= count;
     return reverse_num;
+}
+
+// Function to update the values of all logFileNames with required nomenclature
+void updateLogFileName(CONFIG* config,struct tm *UTCTimeS) {
+  //save index values for recovery
+  unsigned int tempDevIndex = config->devIndex;
+  
+  // MACRO to loop over each device in config structure
+  _MODALO_forEachDevice(device,*config) { 
+    if(device->slaveID == 0) continue;   // skip over empty device declarations
+
+    // update log file name for each device first use
+    sprintf(device->logFileName,"modalo_%d_%s_%04d%02d%02dT%02d%02d%02dz.csv",
+      device->plantCode,      // plant code
+      device->assetID,        // asset ID
+      UTCTimeS->tm_year+1900, // The number of years since 1900
+      UTCTimeS->tm_mon+1,     // month, range 0 to 11
+      UTCTimeS->tm_mday,      // day of the month, range 1 to 31
+      UTCTimeS->tm_hour,      // hours, range 0 to 23
+      UTCTimeS->tm_min,       // minutes, range 0 to 59
+      UTCTimeS->tm_sec);      //update the ISO 8601 time strings
+    //printf("\n\nNew Log File: %s%s\n",config.logFilePath,device->logFileName);
+  }
+
+  //restore devIndex
+  config->devIndex = tempDevIndex;
+  return;
+}
+
+// function to update all log files
+int modbusDataLog(CONFIG* config,struct tm* UTCTimeS) {
+  //save index values for recovery
+  unsigned int tempDevIndex = config->devIndex;
+  int result = 1; // assume success by default
+
+  // MACRO to loop over each device in config structure
+  _MODALO_forEachDevice(device,*config) { 
+    if(device->slaveID == 0) continue;   // skip over empty device declarations
+    result &= writeLogFile(device,config->logFilePath,UTCTimeS); // try all valid devices
+  }
+  config->devIndex = tempDevIndex; // reset the devIndex
+  return result; // return result
+}
+
+// Function to read from the next valid register
+int pollNextReg(CONFIG* config, modbus_t* ctx) {
+
+  MAP* pollMap = &(config->device[config->devIndex].map); // sets the current map
+  
+  // checks for dev index overflow
+  if(config->devIndex >= MAX_MODBUS_DEVICES) {
+    config->devIndex = 0; // reset devIndex    
+    pollMap = &(config->device[config->devIndex].map); // sets the current map
+    pollMap->regIndex = 0; //reset the regIndex
+  }
+
+  // checks for reg index overflow
+  if(pollMap->regIndex>=pollMap->mapSize) {
+    pollMap->regIndex=0; // reset index (old)
+    do {
+      config->devIndex++; // move on to next device
+      if(config->devIndex >= MAX_MODBUS_DEVICES) config->devIndex = 0; // reset device on overflow
+    }while(config->device[config->devIndex].slaveID == 0);
+    pollMap = &(config->device[config->devIndex].map); // sets the current map
+    pollMap->regIndex = 0; //reset the regIndex (new)
+  }
+
+  // reads the current register and increments the regIndex
+  return readReg(ctx, &(pollMap->reg[pollMap->regIndex++]));
 }
