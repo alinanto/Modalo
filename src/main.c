@@ -49,7 +49,7 @@ No part/piece may be reused without explicit permission of POWERGRID */
 modbus_t* initialiseModbus(CONFIG * config);
 int pollNextReg(CONFIG* config, modbus_t* ctx);
 void updateLogFileName(CONFIG* config,struct tm *UTCTimeS);
-int readReg(modbus_t* ctx, REG* reg);
+int readReg(modbus_t* ctx, unsigned int slaveID, REG* reg);
 int writeLogFile(DEVICE* device,char* logFilePath,struct tm *UTCTimeS);
 int modbusDataLog(CONFIG* config,struct tm* UTCTimeS);
 uint16_t reverseBits(uint16_t num);
@@ -198,7 +198,7 @@ modbus_t* initialiseModbus(CONFIG * config)
 }
 
 // function to read the given register and update the value in the given context
-int readReg(modbus_t* ctx, REG* reg)
+int readReg(modbus_t* ctx, unsigned int slaveID, REG* reg)
 {
   char error[MODALO_ERROR_MAXLENGTH] = "";
   int mResult = 0;
@@ -214,6 +214,13 @@ int readReg(modbus_t* ctx, REG* reg)
   	return 0;
   }
 
+  // set slave as current device configuration
+  if(modbus_set_slave(ctx,slaveID) == -1)   { // set slave error
+    sprintf(error,"Unable to select slave: %s, ERROR CODE:%s",slaveID,modbus_strerror(errno));
+    modaloSetLastError(EMODBUS_INIT,error);
+    return 0;
+  }
+
   // function code 3: Read Holding Register
   if(reg->functionCode==3) mResult = modbus_read_registers(ctx,reg->regAddress,reg->regSizeU16,reg->valueU16);
 
@@ -221,7 +228,7 @@ int readReg(modbus_t* ctx, REG* reg)
   if(reg->functionCode==4) mResult = modbus_read_input_registers(ctx,reg->regAddress,reg->regSizeU16,reg->valueU16);
 
   if(mResult != reg->regSizeU16)	{ // error reading register
-  	sprintf(error, "Reading register %s failed with CODE: %s",reg->regName,modbus_strerror(errno));
+  	sprintf(error, "SLAVE ID: %u => Reading register %s, failed with CODE: %s",slaveID,reg->regName,modbus_strerror(errno));
   	modbus_flush(ctx);
     modaloSetLastError(EMODBUS_READ,error);
   	return 0;
@@ -383,6 +390,8 @@ int modbusDataLog(CONFIG* config,struct tm* UTCTimeS) {
 int pollNextReg(CONFIG* config, modbus_t* ctx) {
 
   MAP* pollMap = &(config->device[config->devIndex].map); // sets the current map
+  char error[MODALO_ERROR_MAXLENGTH] = "";
+  unsigned int slaveID=0;
   
   // checks for dev index overflow
   if(config->devIndex >= MAX_MODBUS_DEVICES) {
@@ -402,6 +411,8 @@ int pollNextReg(CONFIG* config, modbus_t* ctx) {
     pollMap->regIndex = 0; //reset the regIndex (new)
   }
 
+  
+
   // reads the current register and increments the regIndex
-  return readReg(ctx, &(pollMap->reg[pollMap->regIndex++]));
+  return readReg(ctx,config->device[config->devIndex].slaveID, &(pollMap->reg[pollMap->regIndex++]));
 }
