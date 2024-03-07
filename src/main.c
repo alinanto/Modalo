@@ -6,24 +6,41 @@ License:Restricted
 
 No part/piece may be reused without explicit permission of POWERGRID */
 
-// pending work
-/*
-1) start stop logging time from config file
-2) JSON files for other device makes
-3) WINAPI main for hiding console window
-4) preprocessor directives for supporting verbose mode
-5) Add functionality for polling multiple devices
-6) Implement log file name as dynamically allocated and only pointer part of device config
+# define MODALO_VERSION 2.0
+/////// REVISION NOTES /////////
+//
+// V1.0 support for solis inverter
+// V1.1 added editable config file for portability
+//      added parsing of config file
+//      added support for U16 and U32 registers.
+// V1.2 added support for detailed error handling & error module
+//      added support for parsing json file (beta)
+//      added support for other endien (big/little) register
+//      added support for reading register map from json (beta)
+//      shifted core functionality of modbus to dll file for version control.
+// V1.3 bug fix while reading little endien register
+//      bug fix while parsing incomplete config file
+//      changed time format to UTC with Z terminator
+//      bug fix in file interval - Active throughout the valid minute
+// V1.4 added plant code to config file.
+//      added plant code to logfileName
+//      cleaned and optimised token validation function for json parser
+//      bug fix while printing parity to console window
+//      recombiled for standard UCRT windows runtime library. removed support for windows 8 and below.
 
-/*  Completed Work
-1) Fixed bug in file interval - Active thorughout the valid minute
-2) Add plant code and asset ID into config file
-3) change time stamp to UTC with Z terminator
-4) Add plant code and asset ID into log file name
-5) log file path change to dynamically read from config file
-6) Cleaned and optimised token validation function
-7) Fixed Bug while printing parity
-*/
+// V2.0 Added functionality for polling multiple devices
+//      Added preprocessor directives for hidding nonAPI function from dll export (demotivate dll injection attack)
+//      Removed asset ID from config file and use slave ID instead as device Identification.
+
+// VX.X (pending)
+// WINAPI main for hiding console window and using window UI
+// preprocessor directives for supporting verbose mode
+// Implement log file name as dynamically allocated and only pointer part of device config
+// support for IEEE float32. 
+// add float register type to map.json (U32,U16, IEEE-float32)
+// UI editor for configuration files and map files
+/////// REVISION NOTES /////////
+
 // windows runtime libraries
 #include <stdio.h>
 #include <errno.h>
@@ -271,7 +288,7 @@ int writeLogFile(DEVICE* device,char* logFilePath,struct tm *UTCTimeS) {
   // file opened successfully
   fseek(logFileHandle,0,SEEK_END); // goto end of file
   if(ftell(logFileHandle)==0) { // size of file is 0, now we can write file header
-    fResult=fprintf(logFileHandle,"Time_Stamp_(ISO8601)"); // timestamp is always included
+    fResult=fprintf(logFileHandle,"Asset_ID, Time_Stamp_(ISO8601)"); // Asset ID & Timestamp is always included
     if(fResult<1) { // error writing to file
       modaloSetLastError(ELOG_FILE,"Unable to write to log file!");
       fclose(logFileHandle);
@@ -294,7 +311,18 @@ int writeLogFile(DEVICE* device,char* logFilePath,struct tm *UTCTimeS) {
     }
   } // header completed
 
-  //timestamp is column 1: always included ISO 8601 string
+  // Asset ID is column 1: always included as "PPPP-SS"
+  // where PPPP is plant code & SS is salve ID
+  fResult=fprintf(logFileHandle,"%04d-%02d, ",
+    device->plantCode,      // plant code
+    device->slaveID);       // slave ID
+  if(fResult<1) { // error writing to file
+    modaloSetLastError(ELOG_FILE,"Unable to write to log file!");
+    fclose(logFileHandle);
+    return 0;
+  }
+
+  //timestamp is column 2: always included ISO 8601 string
   fResult=fprintf(logFileHandle,"%04d-%02d-%02dT%02d:%02d:%02dz",
     UTCTimeS->tm_year+1900, // The number of years since 1900
     UTCTimeS->tm_mon+1,     // month, range 0 to 11
@@ -354,9 +382,9 @@ void updateLogFileName(CONFIG* config,struct tm *UTCTimeS) {
     if(device->slaveID == 0) continue;   // skip over empty device declarations
 
     // update log file name for each device first use
-    sprintf(device->logFileName,"modalo_%d_%s_%04d%02d%02dT%02d%02d%02dz.csv",
+    sprintf(device->logFileName,"modalo_%04d-%02d_%04d%02d%02dT%02d%02d%02dz.csv",
       device->plantCode,      // plant code
-      device->assetID,        // asset ID
+      device->slaveID,        // slave ID
       UTCTimeS->tm_year+1900, // The number of years since 1900
       UTCTimeS->tm_mon+1,     // month, range 0 to 11
       UTCTimeS->tm_mday,      // day of the month, range 1 to 31

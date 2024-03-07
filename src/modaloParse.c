@@ -10,7 +10,6 @@
 // To clear any half parsed device information
 void cleanModaloConfigStruct(CONFIG *config) {
   for(int i=0;i<MAX_MODBUS_DEVICES;i++)   {
-    if(config->device[i].assetID[0] == '\0')  config->device[i].slaveID = 0;
     if(config->device[i].model[0] == '\0')  config->device[i].slaveID = 0;
     if(config->device[i].make[0] == '\0')  config->device[i].slaveID = 0;
     if(config->device[i].capacity == 0)  config->device[i].slaveID = 0;
@@ -42,12 +41,6 @@ int validateModaloDeviceToken(CONFIG* config, char * indexParameter, char * chil
   // MODEL value validation
   if(!strcmp(childParameter,"MODEL") && strlen(value)<MAXNAMESIZE) { 
     strcpy(config->device[index].model,value);
-    return 1;
-  }
-
-  // ASSETID value validation
-  if(!strcmp(childParameter,"ASSETID") && strlen(value)<MAXNAMESIZE) { 
-    strcpy(config->device[index].assetID,value);
     return 1;
   }
 
@@ -304,7 +297,6 @@ MODALO_API int MODALO_CALL parseModaloConfigFile(CONFIG* config, char * FileName
   config->device[0].plantCode = 1211;
   strcpy(config->device[0].make,"SOLIS");
   strcpy(config->device[0].model,"SOLIS-15K");
-  strcpy(config->device[0].assetID,"123");
 
   file = fopen(FileName,"r"); //open for read
   if(file==NULL) //file open failed
@@ -394,7 +386,6 @@ MODALO_API void MODALO_CALL printModaloConfig(CONFIG config) {
     if(device->slaveID == 0) continue; // empty device configuration
     printf("Device %d - Make: %s\n",config.devIndex+1,device->make);
     printf("Device %d - Model: %s\n",config.devIndex+1,device->model);
-    printf("Device %d - Asset ID: %s\n",config.devIndex+1,device->assetID);
     printf("Device %d - Slave ID: %d\n",config.devIndex+1,device->slaveID);
     printf("Device %d - Plant Code: %d\n",config.devIndex+1,device->plantCode);
     printf("Device %d - Capacity: %d\n",config.devIndex+1,device->capacity);

@@ -30,7 +30,7 @@ extern "C"
 #define PARITY_ODD 'O'
 #define PARITY_EVEN 'E'
 #define PARITY_NONE 'N'
-#define MAXNAMESIZE 32            // maximum size of make, model, asset ID, regName
+#define MAXNAMESIZE 32            // maximum size of make, model, regName
 #define MAX_MODBUS_DEVICES 15     // maximum no. of modbus devices
 #define MAX_BAUD_RATE 199999
 #define MAX_DATA_BITS 32
@@ -65,8 +65,7 @@ typedef struct MAP {
 // structure for holding DEVICE specific informations
 typedef struct DEVICE {
   char make[MAXNAMESIZE];
-  char model[MAXNAMESIZE];  
-  char assetID[MAXNAMESIZE];
+  char model[MAXNAMESIZE];
   unsigned int capacity;
   unsigned int plantCode;
   unsigned int slaveID;

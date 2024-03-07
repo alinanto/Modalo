@@ -2,7 +2,7 @@ cls
 @echo OFF
 
 :: combiling modbus library - uncomment only for recombiling dll library
-:: gcc -I includes/ -o bin/libmodbus.dll -s -shared src/modbus*.c -lws2_32
+:: gcc -I includes/ -o bin/libmodbus.dll -s -shared src/modbus*.c -lws2_32 -D DLLBUILD
 
 :: combiling cJSON - JSON Parsing library -  - always recombileuncomment only for recombiling dll library
 :: gcc -I includes/ -o bin/libcJSON.dll -s -shared src/cJSON.c
