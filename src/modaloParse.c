@@ -10,7 +10,6 @@
 // To clear any half parsed device information
 void cleanModaloConfigStruct(CONFIG *config) {
   for(int i=0;i<MAX_MODBUS_DEVICES;i++)   {
-    if(config->device[i].assetID[0] == '\0')  config->device[i].slaveID = 0;
     if(config->device[i].model[0] == '\0')  config->device[i].slaveID = 0;
     if(config->device[i].make[0] == '\0')  config->device[i].slaveID = 0;
     if(config->device[i].capacity == 0)  config->device[i].slaveID = 0;
@@ -34,20 +33,14 @@ int validateModaloDeviceToken(CONFIG* config, char * indexParameter, char * chil
   index = atoi(indexParameter)-1; // index validated
 
   // MAKE value validation
-  if(!strcmp(childParameter,"MAKE") && strlen(value)<MAKE_MODEL_NAMESIZE) { 
+  if(!strcmp(childParameter,"MAKE") && strlen(value)<MAXNAMESIZE) { 
     strcpy(config->device[index].make,value);
     return 1;
   }
 
   // MODEL value validation
-  if(!strcmp(childParameter,"MODEL") && strlen(value)<MAKE_MODEL_NAMESIZE) { 
+  if(!strcmp(childParameter,"MODEL") && strlen(value)<MAXNAMESIZE) { 
     strcpy(config->device[index].model,value);
-    return 1;
-  }
-
-  // ASSETID value validation
-  if(!strcmp(childParameter,"ASSETID") && strlen(value)<MAKE_MODEL_NAMESIZE) { 
-    strcpy(config->device[index].assetID,value);
     return 1;
   }
 
@@ -304,7 +297,6 @@ MODALO_API int MODALO_CALL parseModaloConfigFile(CONFIG* config, char * FileName
   config->device[0].plantCode = 1211;
   strcpy(config->device[0].make,"SOLIS");
   strcpy(config->device[0].model,"SOLIS-15K");
-  strcpy(config->device[0].assetID,"123");
 
   file = fopen(FileName,"r"); //open for read
   if(file==NULL) //file open failed
@@ -372,47 +364,130 @@ MODALO_API int MODALO_CALL parseModaloConfigFile(CONFIG* config, char * FileName
 
 // to print settings of modalo config struct
 MODALO_API void MODALO_CALL printModaloConfig(CONFIG config) {
+  char parityString [] = "NONE";
+  if(config.parity=='O') strcpy(parityString,"ODD");
+  if(config.parity=='E') strcpy(parityString,"EVEN");
+ 
   // modbus parameters
   printf("\nPort: %s\n",config.port);
   printf("Baud: %d\n",config.baud);
-  printf("Parity: %d\n",config.parity);
+  printf("Parity: %s\n",parityString);
   printf("Stop Bits: %d\n",config.stopBits);
 
   // sampling and logging parameters
   printf("Sample interval: %d\n",config.sampleInterval);
   printf("File interval: %d\n",config.fileInterval);
   printf("Poll interval: %d\n",config.pollInterval);
-  printf("Start Log min: %d\n",config.startLog);
-  printf("Stop log min: %d\n",config.stopLog);
+  printf("Start Log min: %d\n",config.startLog);  printf("Stop log min: %d\n",config.stopLog);
   printf("Log file path: %s\n",config.logFilePath);
 
   // device parameters
-  for(int i=0;i<MAX_MODBUS_DEVICES;i++)   {
-    if(config.device[i].slaveID == 0) continue; // empty device configuration
-    printf("Device %d - Make: %s\n",i+1,config.device[i].make);
-    printf("Device %d - Model: %s\n",i+1,config.device[i].model);
-    printf("Device %d - Asset ID: %s\n",i+1,config.device[i].assetID);
-    printf("Device %d - Slave ID: %d\n",i+1,config.device[i].slaveID);
-    printf("Device %d - Plant Code: %d\n",i+1,config.device[i].plantCode);
-    printf("Device %d - Capacity: %d\n",i+1,config.device[i].capacity);
+  _MODALO_forEachDevice(device,config) {
+    if(device->slaveID == 0) continue; // empty device configuration
+    printf("Device %d - Make: %s\n",config.devIndex+1,device->make);
+    printf("Device %d - Model: %s\n",config.devIndex+1,device->model);
+    printf("Device %d - Slave ID: %d\n",config.devIndex+1,device->slaveID);
+    printf("Device %d - Plant Code: %d\n",config.devIndex+1,device->plantCode);
+    printf("Device %d - Capacity: %d\n",config.devIndex+1,device->capacity);
   }
   printf("\n");
 }
 
-// to print mapping of modalo map structure
-MODALO_API void MODALO_CALL printModaloMap(MAP map) {
-  int i=0;
-  for(i=0;i<map.mapSize;i++) {
-    printf("\nReg Name: %s\n",map.reg[i].regName);
-    printf("Reg Add: %d\n",map.reg[i].regAddress);
-    printf("Reg SizeU16: %d\n",map.reg[i].regSizeU16);
-    printf("Byte Reverse: %d\n",map.reg[i].byteReversed);
-    printf("Bit Reverse: %d\n",map.reg[i].bitReversed);
-    printf("Function Code: %d\n",map.reg[i].functionCode);
-    printf("Multiplier:  %d\n",map.reg[i].multiplier);
-    printf("Divisor: %d\n",map.reg[i].divisor);
-    printf("Moving Avg Filter: %d\n",map.reg[i].movingAvgFilter);
+// to print a fixed length of any given string (by default aligns to center)
+void printOnly(char* inStr, size_t outLen) {
+  const size_t inLen = strlen(inStr); // get length of input string
+  if (outLen<=0) return; // invalid outLen parameter
+  char* outStr = (char*) malloc(sizeof(char)*(outLen+1)); // allocate memory for outLen
+  if(outStr == NULL) return; // memory allocation error
+  
+  //case 1 input less than output
+  if(inLen<outLen) {
+    const size_t leftMargin = (outLen-inLen)/2;
+    for(int i=0;i<leftMargin;i++) outStr[i] = ' '; // put spaces from 0 to left Margin
+    strcpy(outStr+leftMargin,inStr); // copy the inStr as is starting from leftMargin
+    for(int i=leftMargin+inLen;i<outLen;i++) outStr[i] = ' '; // put spaces upto outLen
   }
+
+  //case 2 output less than input
+  if(outLen<inLen) {
+    strncpy(outStr,inStr,outLen); // copy the inStr as is limited to outLen characters
+    outStr[outLen-1] = '.'; 
+    outStr[outLen-2] = '.';
+  }
+
+  //case 3 output and input equal
+  if(outLen==inLen) strcpy(outStr,inStr); // copy the inStr as is
+
+  outStr[outLen] = '\0'; // put last memory as null character
+  printf("%s|",outStr);
+  free(outStr);
+}
+
+// to print mapping of modalo map structure
+MODALO_API void MODALO_CALL printModaloMap(CONFIG config) {
+  char buffer[20] = "";
+  const unsigned int col[] = {3,5,25,6,5,5,6,4,4,4,10,12};
+  const unsigned int n_col = 12; 
+  unsigned int lineLen = 1;
+  for(int i=0;i<n_col;i++) lineLen += col[i]+1;
+  
+  for(int i=0;i<lineLen;i++) printf("_");
+  printf("\n|");
+  printOnly("MODBUS MAP TABLE",lineLen-2);
+  printf("\n|");
+  for(int i=0;i<lineLen-2;i++) printf("-");
+  printf("|\n|");
+  printOnly("DV#",col[0]);
+  printOnly("SL_ID",col[1]);
+  printOnly("REG",col[2]);
+  printOnly("SZ_U16",col[3]);
+  printOnly("B_REV",col[4]);
+  printOnly("b_REV",col[5]);
+  printOnly("F_CODE",col[6]);
+  printOnly("MULT",col[7]);
+  printOnly("DIV",col[8]);
+  printOnly("FLTR",col[9]);
+  printOnly("RAW_VAL",col[10]);
+  printOnly("VALUE",col[11]);
+  printf("\n|");
+  
+  for(int i=0;i<n_col;i++) {
+    for(int j=0;j<col[i];j++)
+      printf("-");
+    printf("|");
+  }
+  printf("\n");
+
+  _MODALO_forEachDevice(device,config) { //loop through all devices
+    _MODALO_forEachReg(reg,device->map) { //loop through all registers in dev map
+      printf("|");
+      sprintf(buffer,"%d",config.devIndex+1); printOnly(buffer,col[0]);
+      sprintf(buffer,"%d",device->slaveID); printOnly(buffer,col[1]);
+      sprintf(buffer,"%s",reg->regName); printOnly(buffer,col[2]);
+      sprintf(buffer,"%d",reg->regSizeU16); printOnly(buffer,col[3]);
+      sprintf(buffer,"%d",reg->byteReversed); printOnly(buffer,col[4]);
+      sprintf(buffer,"%d",reg->bitReversed); printOnly(buffer,col[5]);
+      sprintf(buffer,"%d",reg->functionCode); printOnly(buffer,col[6]);
+      sprintf(buffer,"%d",reg->multiplier); printOnly(buffer,col[7]);
+      sprintf(buffer,"%d",reg->divisor); printOnly(buffer,col[8]);
+      sprintf(buffer,"%d",reg->movingAvgFilter); printOnly(buffer,col[9]);
+
+      if(reg->regSizeU16 == 2) sprintf(buffer,"0x%04X%04X",reg->valueU16[0],reg->valueU16[1]);
+      else sprintf(buffer,"0x%08X",reg->valueU16[0]);
+      printOnly(buffer,col[10]);
+
+      sprintf(buffer,"%0.2f",reg->value); printOnly(buffer,col[11]);
+      printf("\n");
+    }  
+  }
+  printf("|");
+  for(int i=0;i<n_col;i++) {
+    for(int j=0;j<col[i];j++)
+      printf("_");
+    printf("|");
+  }
+  printf("\n");
+  fflush(stdout);
 }
 
 // parses and entire file to buffer and then returns pointer : Memory to be made free after use. 
@@ -486,9 +561,12 @@ char* readFileToBuffer(char * fileName)
 }
 
 // To free MAP allocated by JSON Parser
-MODALO_API void MODALO_CALL freeMAP(MAP map)
+MODALO_API void MODALO_CALL freeMAP(CONFIG config)
 {
-  free(map.reg);
+  _MODALO_forEachDevice(device,config) { // MACRO to loop over each device in config structure
+    if(device->slaveID == 0) continue;   // skip over empty device declarations
+    free(device->map.reg);               // free all maps
+  }
 }
 
 // API function to parse JSON. After use u should free the memory using freeMAP()
@@ -525,6 +603,13 @@ MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName)
 
   // starting map assignement
   map.mapSize = cJSON_GetArraySize(model); // size of map
+  if(map.mapSize==0) { // empty array => no register entries
+    modaloSetLastError(EPARSE_CJSON_STRING,"Did not find any valid registers.");
+    free(file);
+    cJSON_Delete(root);
+    map.reg=NULL;
+    return map;
+  }
   map.reg = (REG*) calloc(map.mapSize,sizeof(REG)); // dynamically allocate memory for map
   if(map.reg == NULL) { //error allocation memory for map
     modaloSetLastError(EPARSE_CJSON_STRING,"Unable to allocate memory for map.");
@@ -533,7 +618,7 @@ MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName)
     return map;
   }
 
-  int i=0; // itteration variable
+  map.regIndex=0; // itteration variable
   cJSON_ArrayForEach(reg,model) { //MACRO to itterate over array
     cJSON* regName = cJSON_GetObjectItemCaseSensitive(reg,"regName");
     cJSON* regAddress = cJSON_GetObjectItemCaseSensitive(reg,"regAddress");
@@ -545,28 +630,28 @@ MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName)
     cJSON* divisor = cJSON_GetObjectItemCaseSensitive(reg,"divisor");
     cJSON* movingAvgFilter = cJSON_GetObjectItemCaseSensitive(reg,"movingAvgFilter");
 
-    if(cJSON_IsString(regName) && strlen(regName->valuestring)<REGNAME_MAXSIZE) // regName validated
-      strcpy(map.reg[i].regName,regName->valuestring);
+    if(cJSON_IsString(regName) && strlen(regName->valuestring)<MAXNAMESIZE) // regName validated
+      strcpy(map.reg[map.regIndex].regName,regName->valuestring);
     else break;
 
     //default type validations
-    if(cJSON_IsNumber(regAddress)) map.reg[i].regAddress = regAddress->valueint; else break;//validated
-    if(cJSON_IsNumber(regSizeU16)) map.reg[i].regSizeU16 = regSizeU16->valueint; else break;//validated
-    if(cJSON_IsBool(byteReversed)) map.reg[i].byteReversed = byteReversed->valueint; else break;//validated
-    if(cJSON_IsBool(bitReversed)) map.reg[i].bitReversed = bitReversed->valueint; else break;//validated
-    if(cJSON_IsNumber(functionCode)) map.reg[i].functionCode = functionCode->valueint; else break;//validated
-    if(cJSON_IsNumber(multiplier)) map.reg[i].multiplier = multiplier->valueint; else break;//validated
-    if(cJSON_IsNumber(divisor)) map.reg[i].divisor = divisor->valueint; else break;//validated
-    if(cJSON_IsBool(movingAvgFilter)) map.reg[i].movingAvgFilter = movingAvgFilter->valueint; else break;//validated
+    if(cJSON_IsNumber(regAddress)) map.reg[map.regIndex].regAddress = regAddress->valueint; else break;//validated
+    if(cJSON_IsNumber(regSizeU16)) map.reg[map.regIndex].regSizeU16 = regSizeU16->valueint; else break;//validated
+    if(cJSON_IsBool(byteReversed)) map.reg[map.regIndex].byteReversed = byteReversed->valueint; else break;//validated
+    if(cJSON_IsBool(bitReversed)) map.reg[map.regIndex].bitReversed = bitReversed->valueint; else break;//validated
+    if(cJSON_IsNumber(functionCode)) map.reg[map.regIndex].functionCode = functionCode->valueint; else break;//validated
+    if(cJSON_IsNumber(multiplier)) map.reg[map.regIndex].multiplier = multiplier->valueint; else break;//validated
+    if(cJSON_IsNumber(divisor)) map.reg[map.regIndex].divisor = divisor->valueint; else break;//validated
+    if(cJSON_IsBool(movingAvgFilter)) map.reg[map.regIndex].movingAvgFilter = movingAvgFilter->valueint; else break;//validated
 
     //extra validations based on implementation
-    if(map.reg[i].regSizeU16 != 1 && map.reg[i].regSizeU16 != 2) break; // error if regSize is neither 1 or 2
-    if(map.reg[i].multiplier == 0 || map.reg[i].divisor == 0) break; // error if either multiplier or divisor is zero
+    if(map.reg[map.regIndex].regSizeU16 != 1 && map.reg[map.regIndex].regSizeU16 != 2) break; // error if regSize is neither 1 or 2
+    if(map.reg[map.regIndex].multiplier == 0 || map.reg[map.regIndex].divisor == 0) break; // error if either multiplier or divisor is zero
 
-    i++;
-    if(i==map.mapSize) break;
+    map.regIndex++;
+    if(map.regIndex==map.mapSize) break;
   }
-  if(i!=map.mapSize) { //parse error: one of the validation has failed and loop has breaked.
+  if(map.regIndex!=map.mapSize) { //parse error: one of the validation has failed and loop has breaked.
     modaloSetLastError(EPARSE_CJSON_STRING,"JSON map not as per modalo standard. (refer documentation)");
     free(file);
     cJSON_Delete(root);
@@ -576,6 +661,7 @@ MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName)
   }
 
   //parsed successfully
+  map.regIndex = 0; //reset iteration variable
   free(file);
   cJSON_Delete(root);
   return map;

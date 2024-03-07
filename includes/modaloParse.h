@@ -23,35 +23,58 @@ extern "C"
 
 #define VALUE_SEPARATOR " \n"
 #define PARAMETER_SEPARATOR "_"
-#define MAXLINELENGTH 50
-#define COMMENT_CHAR '#'
+#define MAXLINELENGTH 50          // max line length read at once in config file
+#define COMMENT_CHAR '#'          // comment character in config file
 #define BUFFER_SIZE 1024         // 1kb Buffer
 #define MAX_FILESIZE 1024*1024*2 // 2MB file
-#define REGNAME_MAXSIZE 30
 #define PARITY_ODD 'O'
 #define PARITY_EVEN 'E'
 #define PARITY_NONE 'N'
-#define MAKE_MODEL_NAMESIZE 16
-#define MAX_MODBUS_DEVICES 15
+#define MAXNAMESIZE 32            // maximum size of make, model, regName
+#define MAX_MODBUS_DEVICES 15     // maximum no. of modbus devices
 #define MAX_BAUD_RATE 199999
 #define MAX_DATA_BITS 32
 #define MIN_DATA_BITS 8
 #define MAX_SAMPLE_INTERVAL 86400
 #define MAX_FILE_INTERVAL 1440
-#define FILEPATHSIZE 128
+#define FILEPATHSIZE 128          // maximum length of file path
+#define FILENAMESIZE 80           // maximum length of file name
+
+// structure definitions for holding register information
+typedef struct REG {
+  char regName[MAXNAMESIZE];
+  uint16_t regAddress;
+  uint16_t regSizeU16;
+  uint16_t byteReversed;
+  uint16_t bitReversed;
+  uint16_t functionCode;
+  uint16_t multiplier;
+  uint16_t divisor;
+  uint16_t movingAvgFilter;
+  uint16_t valueU16[2];
+  double value;
+}REG;
+
+// structure definitions for holding map information
+typedef struct MAP {
+  REG* reg;              //pointer to dynamically allocated reg array
+  size_t mapSize;        //size of the reg array
+  unsigned int regIndex; //variable to itterate over reg if needed.
+}MAP;
 
 // structure for holding DEVICE specific informations
 typedef struct DEVICE {
-  char make[MAKE_MODEL_NAMESIZE];
-  char model[MAKE_MODEL_NAMESIZE];  
-  char assetID[MAKE_MODEL_NAMESIZE];
+  char make[MAXNAMESIZE];
+  char model[MAXNAMESIZE];
   unsigned int capacity;
   unsigned int plantCode;
   unsigned int slaveID;
+  MAP map;
+  char logFileName[FILENAMESIZE]; // "modalo_PPPP_AAAAAAAA_YYYYMMDDTHHMMSSz.csv"
 }DEVICE;
 
 // structure definitions for holding configuration information
-typedef struct CONFIG_STRUCT {
+typedef struct CONFIG{
   // modbus configurations
   char port[6];
   unsigned int baud;
@@ -69,35 +92,24 @@ typedef struct CONFIG_STRUCT {
 
   // DEVICE specific configurations
   DEVICE device[MAX_MODBUS_DEVICES];
+  unsigned int devIndex; //variable to itterate over devices if needed.
+  
 }CONFIG;
 
-// structure definitions for holding register information
-typedef struct REG {
-  char regName[REGNAME_MAXSIZE];
-  uint16_t regAddress;
-  uint16_t regSizeU16;
-  uint16_t byteReversed;
-  uint16_t bitReversed;
-  uint16_t functionCode;
-  uint16_t multiplier;
-  uint16_t divisor;
-  uint16_t movingAvgFilter;
-  uint16_t valueU16[2];
-  float value;
-}REG;
+//macro definitions
 
-// structure definitions for holding map information
-typedef struct MAP {
-  REG* reg;
-  size_t mapSize;
-}MAP;
+// loop for each device a in config struct b
+#define _MODALO_forEachDevice(a,b) (b).devIndex=0;for(DEVICE* a=(b).device;(b).devIndex<MAX_MODBUS_DEVICES;(b).devIndex++,a=&(b).device[(b).devIndex])
+
+//loop for each register a in map struct b
+#define _MODALO_forEachReg(a,b) (b).regIndex=0;for(REG* a=(b).reg;(b).regIndex<(b).mapSize;(b).regIndex++,a=&(b).reg[(b).regIndex])
 
 //API functions
 MODALO_API int MODALO_CALL parseModaloConfigFile(CONFIG* config, char * FileName);
-MODALO_API void MODALO_CALL freeMAP(MAP map);
+MODALO_API void MODALO_CALL freeMAP(CONFIG config);
 MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName); // if u use this function, then u should free the memory using freeMAP()
 MODALO_API void MODALO_CALL printModaloConfig(CONFIG config);
-MODALO_API void MODALO_CALL printModaloMap(MAP map);
+MODALO_API void MODALO_CALL printModaloMap(CONFIG config);
 
 // non API functions (not accessible by including header and linking library)
 int validateModaloToken(CONFIG *config, char *parameter, char *value); // validates and saves parameter and value
@@ -109,6 +121,7 @@ void cleanModaloConfigStruct(CONFIG *config);
 int validateModaloCOMPORTString(char* value);
 int validateModaloHHMMString(char* value);
 int validateModaloFilePathString(char* value);
+void printOnly(char* string, size_t len);
 
 #ifdef __cplusplus
 }
