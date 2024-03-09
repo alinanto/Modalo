@@ -6,7 +6,7 @@ License:Restricted
 
 No part/piece may be reused without explicit permission of POWERGRID */
 
-# define MODALO_VERSION 2.0
+# define MODALO_VERSION 2.1
 /////// REVISION NOTES /////////
 //
 // V1.0 support for solis inverter
@@ -31,6 +31,9 @@ No part/piece may be reused without explicit permission of POWERGRID */
 // V2.0 Added functionality for polling multiple devices
 //      Added preprocessor directives for hidding nonAPI function from dll export (demotivate dll injection attack)
 //      Removed asset ID from config file and use slave ID instead as device Identification.
+// V2.1 Added verbose mode by using debug mode in modbus library. divert stderr to logfile.
+//      Modified printModaloConfig, printModalo & printOnly function to print to given FILE DESCRIPTOR
+//      Recombiled lib
 
 // VX.X (pending)
 // WINAPI main for hiding console window and using window UI
@@ -39,6 +42,7 @@ No part/piece may be reused without explicit permission of POWERGRID */
 // support for IEEE float32. 
 // add float register type to map.json (U32,U16, IEEE-float32)
 // UI editor for configuration files and map files
+
 /////// REVISION NOTES /////////
 
 // windows runtime libraries
@@ -61,6 +65,7 @@ No part/piece may be reused without explicit permission of POWERGRID */
 #define MODBUS_RETRY_INTERVAL 1000 // in milliseconds (ms)
 #define MODALO_SLEEP 900 // sleep time of loop in ms(exactly 1s might overshoot and skip a second)
 #define MODALO_SLEEP_MORE 100 // sleep time in case 1s did not elapse (in ms)
+#define MODALO_LOG "modalo.log" // logfile for debug mode
 
 // function definitions
 modbus_t* initialiseModbus(CONFIG * config);
@@ -87,7 +92,14 @@ int main(int argc, char *argv[])
   char mapFileName [MAXNAMESIZE+20] = "../config/SOLIS.json";
   
   // setbuf(stdout,NULL); // set std out to unbuffered
-
+  // dup2(modalo_log, STDERR_FILENO); 
+  // preparing for errors and logs.
+  FILE* modalo_log = freopen(MODALO_LOG,"w",stderr); // divert STDERR to logfile
+  if (modalo_log == NULL) {
+    printf("Unable to open log-file!\n");
+    return 0; //error opening file
+  }
+  
   // parse the configuration file
   printf("Parsing configuration File: %s\n",CONFIGFILE);
   if(!parseModaloConfigFile(&config,CONFIGFILE)) // parse failed
@@ -95,7 +107,9 @@ int main(int argc, char *argv[])
     modaloPrintLastError();
     printf("Continuing with default configuration.\n");
   }
-  printModaloConfig(config);
+  printModaloConfig(config,stdout);
+  printModaloConfig(config,stderr); // print config
+  printModaloMap(config,stderr); //print map
 
   // starting to read map files and save to device configuration structure
   _MODALO_forEachDevice(device,config) { // MACRO to loop over each device in config structure
@@ -106,6 +120,7 @@ int main(int argc, char *argv[])
     if(device->map.reg == NULL){ // handle error
       modaloPrintLastError();
       freeMAP(config);
+      fclose(modalo_log);
       system("pause");
       return -1;
     }
@@ -118,6 +133,7 @@ int main(int argc, char *argv[])
   {
     modaloPrintLastError();
     freeMAP(config);
+    fclose(modalo_log);
     system("pause");
     return -1;
   }
@@ -149,7 +165,7 @@ int main(int argc, char *argv[])
       if(!pollNextReg(&config,ctx)) modaloPrintLastError(); // read reg error
       else { // read success
         system("cls");  // clear screen
-        printModaloMap(config); //print map
+        printModaloMap(config,stdout); //print map
       }
     } // poll interval ends.
 
@@ -166,6 +182,7 @@ int main(int argc, char *argv[])
   modbus_close(ctx);
   modbus_free(ctx);
   freeMAP(config);
+  fclose(modalo_log);
   return 0;
 }
 
@@ -200,11 +217,20 @@ modbus_t* initialiseModbus(CONFIG * config)
       modaloSetLastError(EMODBUS_INIT,error);
 	    modbus_free(ctx);
       ctx=NULL;
+		}
+    else if(modbus_set_debug(ctx, TRUE) == -1 ) // turn on debug mode
+		{
+	    sprintf(error,"Unable to turn on debug mode, ERROR CODE:%s",modbus_strerror(errno));
+      modaloSetLastError(EMODBUS_INIT,error);
+      modbus_close(ctx);      
+	    modbus_free(ctx);
+      ctx=NULL;
 		}/* set slave removed from initialisation for using multiple devices
     else if(modbus_set_slave(ctx, config->device[0].slaveID) == -1)
     {
       sprintf(error,"Unable to select slave: %s, ERROR CODE:%s",device[0].slaveID,modbus_strerror(errno));
       modaloSetLastError(EMODBUS_INIT,error);
+      modbus_close(ctx);
 	    modbus_free(ctx);
       ctx=NULL;
     }*/

@@ -35,4 +35,5 @@ MODALO_API void MODALO_CALL modaloSetLastError(int errorCode, char * LastError)
 MODALO_API void MODALO_CALL modaloPrintLastError()
 {
   printf("%s: %s\n",modaloGetErrorType(),modaloLastError);
+  fprintf(stderr,"%s: %s\n",modaloGetErrorType(),modaloLastError);
 }

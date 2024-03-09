@@ -108,8 +108,8 @@ typedef struct CONFIG{
 MODALO_API int MODALO_CALL parseModaloConfigFile(CONFIG* config, char * FileName);
 MODALO_API void MODALO_CALL freeMAP(CONFIG config);
 MODALO_API MAP MODALO_CALL parseModaloJSONFile(char* fileName, char* modelName); // if u use this function, then u should free the memory using freeMAP()
-MODALO_API void MODALO_CALL printModaloConfig(CONFIG config);
-MODALO_API void MODALO_CALL printModaloMap(CONFIG config);
+MODALO_API void MODALO_CALL printModaloConfig(CONFIG config, FILE *fd);
+MODALO_API void MODALO_CALL printModaloMap(CONFIG config, FILE *fd);
 
 // non API functions (not accessible by including header and linking library)
 int validateModaloToken(CONFIG *config, char *parameter, char *value); // validates and saves parameter and value
@@ -121,7 +121,7 @@ void cleanModaloConfigStruct(CONFIG *config);
 int validateModaloCOMPORTString(char* value);
 int validateModaloHHMMString(char* value);
 int validateModaloFilePathString(char* value);
-void printOnly(char* string, size_t len);
+void printOnly(FILE *fd, char* string, size_t len);
 
 #ifdef __cplusplus
 }
