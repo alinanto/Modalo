@@ -1,0 +1,49 @@
+{
+  "TRIO-20-TL-OUTD": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 148,
+      "regType" : "F32" ,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 132,
+      "regType" : "F32" ,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    }
+  ],"TRIO-27.6-TL-OUTD": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 148,
+      "regType" : "F32" ,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 132,
+      "regType" : "F32" ,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    }
+  ]
+}

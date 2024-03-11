@@ -741,52 +741,59 @@ MODALO_API MAP MODALO_CALL parseModaloJSONFile(char *fileName, char *modelName)
     else
       break;
 
-    map.reg[map.regIndex].regType = U16; // default value
-    if (cJSON_IsString(regType) && strlen(regType->valuestring) == 3) { // regType validated
+    // default type validations
+    if (cJSON_IsNumber(regAddress))
+      map.reg[map.regIndex].regAddress = regAddress->valueint;
+    else
+      break; // invalidated
+
+    if (cJSON_IsString(regType) && strlen(regType->valuestring) == 3) { // text ok
       if(strcmp("U16",regType->valuestring) == 0) // U16
         map.reg[map.regIndex].regType = U16;
       else if(strcmp("U32",regType->valuestring) == 0) // U32
         map.reg[map.regIndex].regType = U32;
       else if(strcmp("F32",regType->valuestring) == 0) // F32
         map.reg[map.regIndex].regType = F32;
-      else ; // not a valid register
-         // no error for backward compatibility 
+      else // regType mentioned is not valid - invalidate even if regSize is mentioned
+        break;
+      map.reg[map.regIndex].regSize = (map.reg[map.regIndex].regType % 10); // if regType is mentioned
     }
-    else ; // no error for backward compatibility
-
-    // default type validations
-    if (cJSON_IsNumber(regAddress))
-      map.reg[map.regIndex].regAddress = regAddress->valueint;
-    else
-      break; // validated
-    if (cJSON_IsNumber(regSize))
+    else if (cJSON_IsNumber(regSize) && regType == NULL) { // backwards compatibiltiy where only regSize is mentioned
       map.reg[map.regIndex].regSize = regSize->valueint;
-    else
-      break; // validated
+      map.reg[map.regIndex].regType = regSize->valueint;
+    }      
+    else // both regSize and regType not mentioned - invalidated
+        break;
+
     if (cJSON_IsBool(byteReversed))
       map.reg[map.regIndex].byteReversed = byteReversed->valueint;
     else
-      break; // validated
+      break; // invalidated
+
     if (cJSON_IsBool(bitReversed))
       map.reg[map.regIndex].bitReversed = bitReversed->valueint;
     else
-      break; // validated
+      break; // invalidated
+
     if (cJSON_IsNumber(functionCode))
       map.reg[map.regIndex].functionCode = functionCode->valueint;
     else
-      break; // validated
+      break; // invalidated
+
     if (cJSON_IsNumber(multiplier))
       map.reg[map.regIndex].multiplier = multiplier->valueint;
     else
-      break; // validated
+      break; // invalidated
+
     if (cJSON_IsNumber(divisor))
       map.reg[map.regIndex].divisor = divisor->valueint;
     else
-      break; // validated
+      break; // invalidated
+
     if (cJSON_IsBool(movingAvgFilter))
       map.reg[map.regIndex].movingAvgFilter = movingAvgFilter->valueint;
     else
-      break; // validated
+      break; // invalidated
 
     // extra validations based on implementation
     if (map.reg[map.regIndex].regSize != 1 && map.reg[map.regIndex].regSize != 2)

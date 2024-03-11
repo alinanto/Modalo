@@ -1,7 +1,7 @@
 {
-  "SOFAR": [
+  "SOFAR-ALL": [
     {
-      "regName": "PowerGeneration_(W)",
+      "regName": "PowerGenerationAC_(W)",
       "regAddress": 533,
       "regSizeU16": 1,
       "byteReversed": false,

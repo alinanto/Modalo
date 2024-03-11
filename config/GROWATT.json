@@ -1,0 +1,170 @@
+{
+  "OLD_MODEL": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress":11,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 26,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    }
+  ],
+  "MAX_Series": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress":35,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 53,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    }
+  ],  
+  "MID_Series": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress":35,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 53,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    }
+  ],
+  "MAC_Series": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress":35,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 53,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    }
+  ],
+  "MIX_Series": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress":35,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 53,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    }
+  ],
+  "MIN_Series": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress":3035,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 3053,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    }
+  ],  
+  "SPA_Series": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress":1035,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 1053,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": false
+    }
+  ]
+}

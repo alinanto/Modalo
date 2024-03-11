@@ -72,8 +72,7 @@ int main(int argc, char *argv[])
   }
   printModaloConfig(config,stdout);
   printModaloConfig(config,stderr); // print config
-  printModaloMap(config,stderr); //print map
-
+  
   // starting to read map files and save to device configuration structure
   _MODALO_forEachDevice(device,config) { // MACRO to loop over each device in config structure
     if(device->slaveID == 0) continue;   // skip over empty device declarations
@@ -88,6 +87,8 @@ int main(int argc, char *argv[])
       return -1;
     }
   }
+  printModaloMap(config,stdout); //print map
+  printModaloMap(config,stderr); //print map
 
   // initialise modbus  
   printf("\nInitialsing modbus connection.\n");
@@ -255,9 +256,13 @@ int readReg(modbus_t* ctx, unsigned int slaveID, REG* reg)
     reg->value = ((double)reg->readReg.valueF32 * (double)reg->multiplier) / (double)reg->divisor;
   else if(reg->regType == U32) // U32
     reg->value = ((double)reg->readReg.valueU32 * (double)reg->multiplier) / (double)reg->divisor;
-  else // U16
+  else if(reg->regType == U16)// U16
     reg->value = ((double)reg->readReg.valueU16 * (double)reg->multiplier) / (double)reg->divisor;
-
+  else {
+    sprintf(error, "SLAVE ID: %u => Reading register %s, failed -> Invalid Register Type: %d",slaveID,reg->regName,reg->regType);
+    modaloSetLastError(EMODBUS_READ,error);
+  	return 0;
+  }
   return 1; // read success
 }
 

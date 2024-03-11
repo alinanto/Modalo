@@ -1,0 +1,50 @@
+{
+  "IMARS-BG50KTR": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress":5797,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 5655,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 1,
+      "divisor" : 100,
+      "movingAvgFilter": false
+    }
+  ],
+"IMARS-BG40KTR": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress":5797,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 5655,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 1,
+      "divisor" : 100,
+      "movingAvgFilter": false
+    }
+  ]
+}
