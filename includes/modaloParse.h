@@ -40,19 +40,38 @@ extern "C"
 #define FILEPATHSIZE 128          // maximum length of file path
 #define FILENAMESIZE 80           // maximum length of file name
 
+// enum definition for denoting various register type
+typedef enum REGTYPE {
+  U16 = 1,
+  U32 = 2,
+  F32 = 12
+}REGTYPE;
+
+// union definition for holding various register type
+typedef union DATA32BIT {
+  struct {
+    uint16_t highWord;
+    uint16_t lowWord;
+  } value;
+  uint16_t valueU16; // Unsinged 16-bit integer
+  uint32_t valueU32; // Unsigned 32-bit integer
+  float valueF32; //IEEE 32-bit float
+}DATA32BIT;
+
 // structure definitions for holding register information
 typedef struct REG {
   char regName[MAXNAMESIZE];
   uint16_t regAddress;
-  uint16_t regSizeU16;
+  REGTYPE regType;
+  uint16_t regSize;
   uint16_t byteReversed;
   uint16_t bitReversed;
   uint16_t functionCode;
   uint16_t multiplier;
   uint16_t divisor;
   uint16_t movingAvgFilter;
-  uint16_t valueU16[2];
-  double value;
+  DATA32BIT readReg;        // for reading during a single modbus read request
+  double value;       // to store value after successfull read
 }REG;
 
 // structure definitions for holding map information

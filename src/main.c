@@ -7,43 +7,6 @@ License:Restricted
 No part/piece may be reused without explicit permission of POWERGRID */
 
 # define MODALO_VERSION 2.1
-/////// REVISION NOTES /////////
-//
-// V1.0 support for solis inverter
-// V1.1 added editable config file for portability
-//      added parsing of config file
-//      added support for U16 and U32 registers.
-// V1.2 added support for detailed error handling & error module
-//      added support for parsing json file (beta)
-//      added support for other endien (big/little) register
-//      added support for reading register map from json (beta)
-//      shifted core functionality of modbus to dll file for version control.
-// V1.3 bug fix while reading little endien register
-//      bug fix while parsing incomplete config file
-//      changed time format to UTC with Z terminator
-//      bug fix in file interval - Active throughout the valid minute
-// V1.4 added plant code to config file.
-//      added plant code to logfileName
-//      cleaned and optimised token validation function for json parser
-//      bug fix while printing parity to console window
-//      recombiled for standard UCRT windows runtime library. removed support for windows 8 and below.
-
-// V2.0 Added functionality for polling multiple devices
-//      Added preprocessor directives for hidding nonAPI function from dll export (demotivate dll injection attack)
-//      Removed asset ID from config file and use slave ID instead as device Identification.
-// V2.1 Added verbose mode by using debug mode in modbus library. divert stderr to logfile.
-//      Modified printModaloConfig, printModalo & printOnly function to print to given FILE DESCRIPTOR
-//      Recombiled lib
-
-// VX.X (pending)
-// WINAPI main for hiding console window and using window UI
-// preprocessor directives for supporting verbose mode
-// Implement log file name as dynamically allocated and only pointer part of device config
-// support for IEEE float32. 
-// add float register type to map.json (U32,U16, IEEE-float32)
-// UI editor for configuration files and map files
-
-/////// REVISION NOTES /////////
 
 // windows runtime libraries
 #include <stdio.h>
@@ -265,12 +228,12 @@ int readReg(modbus_t* ctx, unsigned int slaveID, REG* reg)
   }
 
   // function code 3: Read Holding Register
-  if(reg->functionCode==3) mResult = modbus_read_registers(ctx,reg->regAddress,reg->regSizeU16,reg->valueU16);
+  if(reg->functionCode==3) mResult = modbus_read_registers(ctx,reg->regAddress,reg->regSize,&(reg->readReg));
 
   // function code 4: Read input register
-  if(reg->functionCode==4) mResult = modbus_read_input_registers(ctx,reg->regAddress,reg->regSizeU16,reg->valueU16);
+  if(reg->functionCode==4) mResult = modbus_read_input_registers(ctx,reg->regAddress,reg->regSize,&(reg->readReg));
 
-  if(mResult != reg->regSizeU16)	{ // error reading register
+  if(mResult != reg->regSize)	{ // error reading register
   	sprintf(error, "SLAVE ID: %u => Reading register %s, failed with CODE: %s",slaveID,reg->regName,modbus_strerror(errno));
   	modbus_flush(ctx);
     modaloSetLastError(EMODBUS_READ,error);
@@ -279,19 +242,21 @@ int readReg(modbus_t* ctx, unsigned int slaveID, REG* reg)
 
   if(reg->byteReversed) { // reverse the bytes
     uint16_t temp;
-    temp = reg->valueU16[0];
-    reg->valueU16[0] = reg->valueU16[1];
-    reg->valueU16[1] = temp;
+    temp = reg->readReg.value.highWord;
+    reg->readReg.value.highWord = reg->readReg.value.lowWord;
+    reg->readReg.value.lowWord = temp;
   }
   if(reg->bitReversed) { // reverse the Bits
-    reg->valueU16[0] = reverseBits(reg->valueU16[0]);
-    reg->valueU16[1] = reverseBits(reg->valueU16[1]);
+    reg->readReg.value.lowWord = reverseBits(reg->readReg.value.highWord);
+    reg->readReg.value.highWord = reverseBits(reg->readReg.value.highWord);
   }
 
-  if(reg->regSizeU16 == 2) // U32
-    reg->value = (((double)reg->valueU16[0]*65536 + (double)reg->valueU16[1]) * (double)reg->multiplier) / (double)reg->divisor;
+  if(reg->regType == F32) // F32
+    reg->value = ((double)reg->readReg.valueF32 * (double)reg->multiplier) / (double)reg->divisor;
+  else if(reg->regType == U32) // U32
+    reg->value = ((double)reg->readReg.valueU32 * (double)reg->multiplier) / (double)reg->divisor;
   else // U16
-    reg->value = ((double)reg->valueU16[0] * (double)reg->multiplier)/ (double)reg->divisor;
+    reg->value = ((double)reg->readReg.valueU16 * (double)reg->multiplier) / (double)reg->divisor;
 
   return 1; // read success
 }
@@ -338,7 +303,7 @@ int writeLogFile(DEVICE* device,char* logFilePath,struct tm *UTCTimeS) {
   } // header completed
 
   // Asset ID is column 1: always included as "PPPP-SS"
-  // where PPPP is plant code & SS is salve ID
+  // where PPPP is plant code & SS is slave ID
   fResult=fprintf(logFileHandle,"%04d-%02d, ",
     device->plantCode,      // plant code
     device->slaveID);       // slave ID

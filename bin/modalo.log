@@ -1,0 +1,24 @@
+
+Port: COM4
+Baud: 9600
+Parity: NONE
+Stop Bits: 1
+Sample interval: 10
+File interval: 15
+Poll interval: 1
+Start Log min: 330
+Stop log min: 1140
+Log file path: ../log/
+Device 1 - Make: SOLIS
+Device 1 - Model: SOLIS-15K
+Device 1 - Slave ID: 1
+Device 1 - Plant Code: 1211
+Device 1 - Capacity: 17500
+
+____________________________________________________________________________________________________________________
+|                                                 MODBUS MAP TABLE                                                 |
+|------------------------------------------------------------------------------------------------------------------|
+|DV#|SL_ID|           REG           |REG_AD|REG_TY|SZ_U16|B_REV|b_REV|F_CODE|MULT|DIV |FLTR| RAW_VAL  |   VALUE    |
+|---|-----|-------------------------|------|------|------|-----|-----|------|----|----|----|----------|------------|
+|___|_____|_________________________|______|______|______|_____|_____|______|____|____|____|__________|____________|
+MODBUS INITIALSATION ERROR: Unable to connect to COM4, ERROR CODE:No error

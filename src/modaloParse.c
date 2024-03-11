@@ -482,8 +482,8 @@ void printOnly(FILE *fd, char *inStr, size_t outLen)
 MODALO_API void MODALO_CALL printModaloMap(CONFIG config, FILE *fd)
 {
   char buffer[20] = "";
-  const unsigned int col[] = {3, 5, 25, 6, 5, 5, 6, 4, 4, 4, 10, 12};
-  const unsigned int n_col = 12;
+  const unsigned int col[] = {3, 5, 25, 6, 6, 6, 5, 5, 6, 4, 4, 4, 10, 12};
+  const unsigned int n_col = 14;
   unsigned int lineLen = 1;
   for (int i = 0; i < n_col; i++)
     lineLen += col[i] + 1;
@@ -499,15 +499,17 @@ MODALO_API void MODALO_CALL printModaloMap(CONFIG config, FILE *fd)
   printOnly(fd,"DV#", col[0]);
   printOnly(fd,"SL_ID", col[1]);
   printOnly(fd,"REG", col[2]);
-  printOnly(fd,"SZ_U16", col[3]);
-  printOnly(fd,"B_REV", col[4]);
-  printOnly(fd,"b_REV", col[5]);
-  printOnly(fd,"F_CODE", col[6]);
-  printOnly(fd,"MULT", col[7]);
-  printOnly(fd,"DIV", col[8]);
-  printOnly(fd,"FLTR", col[9]);
-  printOnly(fd,"RAW_VAL", col[10]);
-  printOnly(fd,"VALUE", col[11]);
+  printOnly(fd,"REG_AD", col[3]);
+  printOnly(fd,"REG_TY", col[4]);
+  printOnly(fd,"SZ_U16", col[5]);
+  printOnly(fd,"B_REV", col[6]);
+  printOnly(fd,"b_REV", col[7]);
+  printOnly(fd,"F_CODE", col[8]);
+  printOnly(fd,"MULT", col[9]);
+  printOnly(fd,"DIV", col[10]);
+  printOnly(fd,"FLTR", col[11]);
+  printOnly(fd,"RAW_VAL", col[12]);
+  printOnly(fd,"VALUE", col[13]);
   fprintf(fd,"\n|");
 
   for (int i = 0; i < n_col; i++)
@@ -529,29 +531,39 @@ MODALO_API void MODALO_CALL printModaloMap(CONFIG config, FILE *fd)
       printOnly(fd,buffer, col[1]);
       sprintf(buffer, "%s", reg->regName);
       printOnly(fd,buffer, col[2]);
-      sprintf(buffer, "%d", reg->regSizeU16);
+      sprintf(buffer, "%d", reg->regAddress);
       printOnly(fd,buffer, col[3]);
-      sprintf(buffer, "%d", reg->byteReversed);
-      printOnly(fd,buffer, col[4]);
-      sprintf(buffer, "%d", reg->bitReversed);
-      printOnly(fd,buffer, col[5]);
-      sprintf(buffer, "%d", reg->functionCode);
-      printOnly(fd,buffer, col[6]);
-      sprintf(buffer, "%d", reg->multiplier);
-      printOnly(fd,buffer, col[7]);
-      sprintf(buffer, "%d", reg->divisor);
-      printOnly(fd,buffer, col[8]);
-      sprintf(buffer, "%d", reg->movingAvgFilter);
-      printOnly(fd,buffer, col[9]);
 
-      if (reg->regSizeU16 == 2)
-        sprintf(buffer, "0x%04X%04X", reg->valueU16[0], reg->valueU16[1]);
-      else
-        sprintf(buffer, "0x%08X", reg->valueU16[0]);
+      switch(reg->regType) {
+        case U16: { sprintf(buffer, "U16"); break; }
+        case U32: { sprintf(buffer, "U32"); break; }
+        case F32: { sprintf(buffer, "F32"); break; }
+      }
+      printOnly(fd,buffer, col[4]);
+
+      sprintf(buffer, "%d", reg->regSize);
+      printOnly(fd,buffer, col[5]);
+      sprintf(buffer, "%d", reg->byteReversed);
+      printOnly(fd,buffer, col[6]);
+      sprintf(buffer, "%d", reg->bitReversed);
+      printOnly(fd,buffer, col[7]);
+      sprintf(buffer, "%d", reg->functionCode);
+      printOnly(fd,buffer, col[8]);
+      sprintf(buffer, "%d", reg->multiplier);
+      printOnly(fd,buffer, col[9]);
+      sprintf(buffer, "%d", reg->divisor);
       printOnly(fd,buffer, col[10]);
+      sprintf(buffer, "%d", reg->movingAvgFilter);
+      printOnly(fd,buffer, col[11]);
+
+      if (reg->regSize == 2)
+        sprintf(buffer, "0x%08X", reg->readReg.valueU32);
+      else
+        sprintf(buffer, "0x%08X", reg->readReg.valueU16);
+      printOnly(fd,buffer, col[12]);
 
       sprintf(buffer, "%0.2f", reg->value);
-      printOnly(fd,buffer, col[11]);
+      printOnly(fd,buffer, col[13]);
       fprintf(fd,"\n");
     }
   }
@@ -715,7 +727,8 @@ MODALO_API MAP MODALO_CALL parseModaloJSONFile(char *fileName, char *modelName)
   { // MACRO to itterate over array
     cJSON *regName = cJSON_GetObjectItemCaseSensitive(reg, "regName");
     cJSON *regAddress = cJSON_GetObjectItemCaseSensitive(reg, "regAddress");
-    cJSON *regSizeU16 = cJSON_GetObjectItemCaseSensitive(reg, "regSizeU16");
+    cJSON *regSize = cJSON_GetObjectItemCaseSensitive(reg, "regSizeU16");
+    cJSON *regType = cJSON_GetObjectItemCaseSensitive(reg, "regType");
     cJSON *byteReversed = cJSON_GetObjectItemCaseSensitive(reg, "byteReversed");
     cJSON *bitReversed = cJSON_GetObjectItemCaseSensitive(reg, "bitReversed");
     cJSON *functionCode = cJSON_GetObjectItemCaseSensitive(reg, "functionCode");
@@ -728,13 +741,26 @@ MODALO_API MAP MODALO_CALL parseModaloJSONFile(char *fileName, char *modelName)
     else
       break;
 
+    map.reg[map.regIndex].regType = U16; // default value
+    if (cJSON_IsString(regType) && strlen(regType->valuestring) == 3) { // regType validated
+      if(strcmp("U16",regType->valuestring) == 0) // U16
+        map.reg[map.regIndex].regType = U16;
+      else if(strcmp("U32",regType->valuestring) == 0) // U32
+        map.reg[map.regIndex].regType = U32;
+      else if(strcmp("F32",regType->valuestring) == 0) // F32
+        map.reg[map.regIndex].regType = F32;
+      else ; // not a valid register
+         // no error for backward compatibility 
+    }
+    else ; // no error for backward compatibility
+
     // default type validations
     if (cJSON_IsNumber(regAddress))
       map.reg[map.regIndex].regAddress = regAddress->valueint;
     else
       break; // validated
-    if (cJSON_IsNumber(regSizeU16))
-      map.reg[map.regIndex].regSizeU16 = regSizeU16->valueint;
+    if (cJSON_IsNumber(regSize))
+      map.reg[map.regIndex].regSize = regSize->valueint;
     else
       break; // validated
     if (cJSON_IsBool(byteReversed))
@@ -763,7 +789,7 @@ MODALO_API MAP MODALO_CALL parseModaloJSONFile(char *fileName, char *modelName)
       break; // validated
 
     // extra validations based on implementation
-    if (map.reg[map.regIndex].regSizeU16 != 1 && map.reg[map.regIndex].regSizeU16 != 2)
+    if (map.reg[map.regIndex].regSize != 1 && map.reg[map.regIndex].regSize != 2)
       break; // error if regSize is neither 1 or 2
     if (map.reg[map.regIndex].multiplier == 0 || map.reg[map.regIndex].divisor == 0)
       break; // error if either multiplier or divisor is zero
