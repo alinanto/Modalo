@@ -241,7 +241,7 @@ int readReg(modbus_t* ctx, unsigned int slaveID, REG* reg)
   	return 0;
   }
 
-  if(reg->byteReversed) { // reverse the bytes
+  if(!reg->byteReversed) { // reverse the bytes default : Big endian
     uint16_t temp;
     temp = reg->readReg.value.highWord;
     reg->readReg.value.highWord = reg->readReg.value.lowWord;

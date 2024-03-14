@@ -50,8 +50,8 @@ typedef enum REGTYPE {
 // union definition for holding various register type
 typedef union DATA32BIT {
   struct {
-    uint16_t highWord;
     uint16_t lowWord;
+    uint16_t highWord;
   } value;
   uint16_t valueU16; // Unsinged 16-bit integer
   uint32_t valueU32; // Unsigned 32-bit integer

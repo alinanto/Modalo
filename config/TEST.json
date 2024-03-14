@@ -1,0 +1,37 @@
+{
+  "MODEL1": [
+    {
+      "regName": "16-bit unsigned Integer",
+      "regAddress": 3000,
+      "regType": "U16",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "32-bit unsigned Integer",
+      "regAddress": 3001,
+      "regType": "U32",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "IEEE 32-bit float",
+      "regAddress": 3003,
+      "regType": "F32",
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 4,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    }
+  ]
+}
