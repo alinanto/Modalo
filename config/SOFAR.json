@@ -1,5 +1,55 @@
 {
-  "SOFAR-ALL": [
+  "SOFAR": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 1476,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 1668,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 1,
+      "divisor" : 100,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "SOFAR-PLC_OFFSET": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 1475,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 10,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 1667,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 1,
+      "divisor" : 100,
+      "movingAvgFilter": false
+    }
+  ],
+
+  "SOFAR-UNUSED": [
     {
       "regName": "PowerGenerationAC_(W)",
       "regAddress": 533,

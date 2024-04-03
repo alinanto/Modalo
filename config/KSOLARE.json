@@ -1,0 +1,26 @@
+{
+  "5G-PRO": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 30100,
+      "regSizeU16": 2,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 1,
+      "divisor" : 1,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(KWh)",
+      "regAddress": 30110,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": false
+    }
+  ]
+}
