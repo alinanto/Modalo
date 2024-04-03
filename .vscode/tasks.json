@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Mingw64 Build",
+            "label": "Shell Build",
             "type": "shell",
             "command": "./combile.bat",
             "group": {
@@ -10,7 +10,18 @@
                 "isDefault": true
             },
             "problemMatcher": [],
-            "detail": "Build using mingw64"
+            "detail": "Build using shell script"
+        },
+        {
+            "type": "cmake",
+            "label": "CMake: build",
+            "command": "build",
+            "targets": [
+                "all"
+            ],
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "CMake template build task"
         }
     ]
 }

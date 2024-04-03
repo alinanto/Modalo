@@ -1,6 +1,4 @@
 {
-    "cmake.configureOnOpen": false,
-    "files.associations": {
-        "stdlib.h": "c"
-    }
+    "cmake.sourceDirectory": "D:/Drive/Repos/Modalo/src",
+    "cmake.buildDirectory": "${workspaceFolder}/build"
 }
