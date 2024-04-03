@@ -27,3 +27,7 @@ _deps
 
 #Build Directory
 build/*
+
+#Log files
+log/*
+modalo.log
