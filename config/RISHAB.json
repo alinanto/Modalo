@@ -1,0 +1,51 @@
+{
+    "RISH-1350": [
+      {
+        "regName": "PowerGenerationAC_(W)",
+        "regAddress": 52,
+        "regType" : "F32" ,
+        "byteReversed": false,
+        "bitReversed": false,
+        "functionCode": 3,
+        "multiplier": 1,
+        "divisor" : 1,
+        "movingAvgFilter": false
+      },
+      {
+        "regName": "TodaysGeneration_(KWh)",
+        "regAddress": 72,
+        "regType" : "F32" ,
+        "byteReversed": false,
+        "bitReversed": false,
+        "functionCode": 3,
+        "multiplier": 1,
+        "divisor" : 1,
+        "movingAvgFilter": false
+      }
+    ],
+
+    "RISH-1360": [
+        {
+          "regName": "PowerGenerationAC_(W)",
+          "regAddress": 52,
+          "regType" : "F32" ,
+          "byteReversed": false,
+          "bitReversed": false,
+          "functionCode": 3,
+          "multiplier": 1,
+          "divisor" : 1,
+          "movingAvgFilter": false
+        },
+        {
+          "regName": "TodaysGeneration_(KWh)",
+          "regAddress": 72,
+          "regType" : "F32" ,
+          "byteReversed": false,
+          "bitReversed": false,
+          "functionCode": 3,
+          "multiplier": 1,
+          "divisor" : 1,
+          "movingAvgFilter": false
+        }
+    ]
+}
