@@ -1,0 +1,26 @@
+{
+  "FUSION_603": [
+    {
+      "regName": "PowerGenerationAC_(W)",
+      "regAddress": 80,
+      "regSizeU16": 2,
+      "byteReversed": true,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": true
+    },
+    {
+      "regName": "TodaysGeneration_(kWh)",
+      "regAddress": 60,
+      "regSizeU16": 1,
+      "byteReversed": false,
+      "bitReversed": false,
+      "functionCode": 3,
+      "multiplier": 1,
+      "divisor" : 10,
+      "movingAvgFilter": true
+    }
+  ]
+}
