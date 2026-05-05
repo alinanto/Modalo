@@ -4,7 +4,7 @@ A robust Windows-based Modbus data acquisition and logging system designed for i
 
 ## Overview
 
-Modalo is a professional-grade Modbus polling application that enables real-time data collection from multiple Modbus devices (RTU and TCP). It provides flexible configuration management, JSON-based register mapping, and detailed logging capabilities with advanced error handling.
+Modalo is a professional-grade Modbus polling application that enables real-time data collection from multiple Modbus devices (RTU). It provides flexible configuration management, JSON-based register mapping, and detailed logging capabilities with advanced error handling.
 
 ## Features
 
@@ -40,10 +40,10 @@ Modalo is a professional-grade Modbus polling application that enables real-time
 
 ## Installation
 
-1. Download the latest release
+1. Download the main branch
 2. Extract files to your desired installation directory
 3. Configure the application using the config file (see Configuration section)
-4. Run the executable
+4. Compile and run the executable. Or download the release from bin.
 
 ## Configuration
 
@@ -86,7 +86,7 @@ Define your register mappings in JSON format:
 
 ### Basic Operation
 ```
-modalo.exe [config_file.ini]
+.\bin\modalo.exe 
 ```
 
 ### Output Files
@@ -101,25 +101,49 @@ Enable debug logging by setting verbose mode in configuration:
 
 ## Version History
 
-### Current Version: V2.1
-- Verbose mode with debug-level logging
-- Float register type support (U32, U16, IEEE-float32)
-- Backward compatible with previous config and map file formats
-
-### Recent Updates (V2.0)
-- Multi-device polling functionality
-- Enhanced security with hidden DLL exports
-- Slave ID-based device identification
-
-### Upcoming Features (VX.X)
-- GUI (WINAPI) for hiding console window
-- UI editor for configuration and map files
-- Windows 10/11 optimization
+### V1.0 
+* Support for solis invertV1.1. 
+* Added editable config file for portability
+* Added parsing of config file
+* Added support for U16 and U32 registers.
+### V1.2 
+* Added support for detailed error handling & error module
+* Added support for parsing json file (beta)
+* Added support for other endien (big/little) register
+* Added support for reading register map from json (beta)
+* Shifted core functionality of modbus to dll file for version control. 
+### V1.3 
+* Bug fix while reading little endien register
+* Bug fix while parsing incomplete config file
+* Changed time format to UTC with Z terminator
+* Bug fix in file interval - Active throughout the valid minute
+### V1.4 
+* Added plant code to config file.
+* Added plant code to logfileName
+* Cleaned and optimised token validation function for json parser
+* Bug fix while printing parity to console window
+* Recombiled for standard UCRT windows runtime library. 
+* Removed support for windows 8 and below.
+### V2.0 
+* Added functionality for polling multiple devices
+* Added preprocessor directives for hidding nonAPI function from dll export (demotivate dll injection attack)
+* Removed asset ID from config file and use slave ID instead as device Identification.
+### V2.1 
+* Added verbose mode by using debug mode in modbus library. 
+* Diverted stderr to logfile.
+* Modified printModaloConfig, printModalo & printOnly function to print to given FILE DESCRIPTOR
+* Recombiled libmodbus.dll with DLL_EXPORT defined to remove unused functions from exporting.
+* Add float register type to map.json (U32,U16, IEEE-float32) maintaining backward compatibility with older versions of config and map files
+### VX.X (pending)
+* WINAPI main for hiding console window and using window UI
+* UI editor for configuration files and map files
 
 ## Supported Devices
 
 Modalo has been tested and verified with:
 - Solis Inverters (V1.1+)
+- ABB Inverters
+- 
 - Generic Modbus RTU devices
 - Generic Modbus TCP devices
 
@@ -172,7 +196,7 @@ Build with Visual Studio 2019+ or compatible compiler with UCRT support.
 
 ## License
 
-[Specify your license here]
+MIT License
 
 ## Contributing
 
